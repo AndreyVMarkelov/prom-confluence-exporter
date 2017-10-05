@@ -1,24 +1,66 @@
-<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
     <plugin-info>
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="${project.organization.name}" url="${project.organization.url}" />
-        <param name="plugin-icon">images/pluginIcon.png</param>
-        <param name="plugin-logo">images/pluginLogo.png</param>
+        <param name="plugin-logo">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/prom-exporter.png</param>
+        <param name="plugin-icon">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/prom-exporter-sm.png</param>
+        <param name="vendor-icon">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/32.jpg</param>
+        <param name="vendor-logo">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images//144.jpg</param>
+        <param name="configure.url">/admin/prommetrics/settings.action</param>
     </plugin-info>
 
-    <!-- add our i18n resource -->
-    <resource type="i18n" name="i18n" location="prom-confluence-exporter"/>
-    
-    <!-- add our web resources -->
-    <web-resource key="prom-confluence-exporter-resources" name="prom-confluence-exporter Web Resources">
-        <dependency>com.atlassian.auiplugin:ajs</dependency>
-        
-        <resource type="download" name="prom-confluence-exporter.css" location="/css/prom-confluence-exporter.css"/>
-        <resource type="download" name="prom-confluence-exporter.js" location="/js/prom-confluence-exporter.js"/>
-        <resource type="download" name="images/" location="/images"/>
+    <!-- I18N -->
+    <resource type="i18n" name="i18n" location="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.i18n.prom-confluence-exporter"/>
 
-        <context>prom-confluence-exporter</context>
+    <!-- Web Resources -->
+    <web-resource name="Web Resources" key="prom-for-confluence-exporter-resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" name="images/" location="/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images"/>
+        <context>prom-for-confluence-exporter</context>
     </web-resource>
-    
+
+    <!-- Web Items -->
+    <web-item name="Security Token Admin Settings Link" key="prom-for-confluence-exporter-configuration" section="system.admin/configuration" weight="5000">
+        <label key="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.section"/>
+        <description key="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.section.desc"/>
+        <link linkId="prom-for-confluence-exporter-configuration">/admin/prommetrics/settings.action</link>
+        <condition class="com.atlassian.confluence.plugin.descriptor.web.conditions.ConfluenceAdministratorCondition"/>
+    </web-item>
+
+    <!-- Actions -->
+    <xwork name="Security Token Actions" key="prom-for-confluence-exporter-actions">
+        <package name="sendmail-admin" extends="default" namespace="/admin/prommetrics">
+            <default-interceptor-ref name="defaultStack"/>
+            <action name="settings" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.action.admin.SecureTokenConfigAction" method="doDefault">
+                <result name="input" type="velocity">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/templates/actions/admin/settings.vm</result>
+            </action>
+            <action name="savesettings" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.action.admin.SecureTokenConfigAction" method="execute">
+                <interceptor-ref name="validatingStack"/>
+                <param name="RequireSecurityToken">true</param>
+                <result name="input" type="velocity">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/templates/actions/admin/settings.vm</result>
+                <result name="success" type="redirect">/admin/prommetrics/settings.action</result>
+            </action>
+        </package>
+    </xwork>
+
+    <!-- Servlets -->
+    <servlet name="Exporter Servlet" key="prom-for-confluence-exporter-servlet" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.servlet.PrometheusExporter">
+        <description key="prometheus-exporter-servler.description">This servlet exposes metrics to prometheus.</description>
+        <url-pattern>/prometheus/metrics</url-pattern>
+    </servlet>
+
+    <!-- Components -->
+    <component name="Metrics Exporter" key="prom-for-confluence-exporter-exporter" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollectorImpl" public="true">
+        <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector</interface>
+        <description>This service collects metrics.</description>
+    </component>
+    <component name="Security Token Data Manager" key="prom-for-confluence-exporter-data-manager" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManagerImpl">
+        <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManager</interface>
+    </component>
+    <component name="Metrics Event Listener" key="prom-for-confluence-exporter-listener" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.listener.MetricListener">
+        <description>This service listens Confluence events.</description>
+    </component>
+    <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties"/>
 </atlassian-plugin>
