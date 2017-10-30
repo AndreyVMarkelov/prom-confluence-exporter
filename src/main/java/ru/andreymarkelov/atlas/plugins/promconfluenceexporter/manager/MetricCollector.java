@@ -4,9 +4,17 @@ import io.prometheus.client.Collector;
 
 public interface MetricCollector {
     Collector getCollector();
-    void issueUpdateCounter(String projectKey, String issueKey, String username);
-    void issueViewCounter(String projectKey, String issueKey, String username);
-    void userLoginCounter(String username);
-    void userLogoutCounter(String username);
-    void dashboardViewCounter(Long dashboardId, String username);
+
+    void clusterPanicCounter();
+
+    void labelCreateCounter(String visibility, String prefix);
+    void labelAddCounter(String visibility, String prefix, String source, String spaceKey);
+    void labelRemoveCounter(String visibility, String prefix, String source, String spaceKey);
+    void labelDeleteCounter(String visibility, String prefix);
+
+    void userLoginCounter(String username, String ip);
+    void userLogoutCounter(String username, String ip);
+
+    void spaceCreateCounter(String username);
+    void spaceDeleteCounter(String username);
 }
