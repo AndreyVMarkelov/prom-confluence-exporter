@@ -118,11 +118,27 @@ public class MetricListener implements InitializingBean, DisposableBean {
 
     @EventListener
     public void onLoginEvent(LoginEvent loginEvent) {
-        metricCollector.userLoginCounter(loginEvent.getUsername(), loginEvent.getRemoteIP());
+        String username = loginEvent.getUsername();
+        if (username == null) {
+            username = "";
+        }
+        String ip = loginEvent.getRemoteIP();
+        if (ip == null) {
+            ip = "";
+        }
+        metricCollector.userLoginCounter(username, ip);
     }
 
     @EventListener
     public void onLogoutEvent(LogoutEvent logoutEvent) {
-        metricCollector.userLogoutCounter(logoutEvent.getUsername(), logoutEvent.getRemoteIP());
+        String username = logoutEvent.getUsername();
+        if (username == null) {
+            username = "";
+        }
+        String ip = logoutEvent.getRemoteIP();
+        if (ip == null) {
+            ip = "";
+        }
+        metricCollector.userLogoutCounter(username, ip);
     }
 }
