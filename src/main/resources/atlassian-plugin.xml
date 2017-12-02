@@ -51,6 +51,15 @@
         <url-pattern>/prometheus/metrics</url-pattern>
     </servlet>
 
+    <!-- Servlet filter -->
+    <servlet-filter name="Metrics Filter" key="prom-for-confluence-exporter-filter" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.servlet.AllEndpointFilter" location="before-login" weight="100">
+        <description>Prometheus statistics filter.</description>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>ERROR</dispatcher>
+    </servlet-filter>
+
     <!-- Components -->
     <component name="Metrics Exporter" key="prom-for-confluence-exporter-exporter" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollectorImpl" public="true">
         <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector</interface>

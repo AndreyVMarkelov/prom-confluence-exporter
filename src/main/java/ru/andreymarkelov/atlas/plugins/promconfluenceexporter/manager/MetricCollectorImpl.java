@@ -2,11 +2,25 @@ package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
+import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
 
+import javax.servlet.ServletException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 public class MetricCollectorImpl extends Collector implements MetricCollector {
+    private final Histogram requestDurationOnPath = Histogram.build()
+            .name("confluence_request_duration_on_path")
+            .help("Request duration on path")
+            .labelNames("path")
+            .create();
+
+    //--> Cluster
+
     private final Counter clusterPanicCounter = Counter.build()
             .name("confluence_cluster_panic_count")
             .help("Cluster Panic Count")
@@ -65,6 +79,18 @@ public class MetricCollectorImpl extends Collector implements MetricCollector {
             .help("Space Delete Count")
             .labelNames("username")
             .create();
+
+    @Override
+    public void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException {
+        Histogram.Timer level1Timer = isNotBlank(path) ? requestDurationOnPath.labels(path).startTimer() : null;
+        try {
+            runnable.run();
+        } finally {
+            if (level1Timer != null) {
+                level1Timer.observeDuration();
+            }
+        }
+    }
 
     @Override
     public void clusterPanicCounter() {
@@ -135,6 +161,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector {
         result.addAll(labelDeleteCounter.collect());
         result.addAll(userLoginCounter.collect());
         result.addAll(userLogoutCounter.collect());
+        result.addAll(requestDurationOnPath.collect());
         return result;
     }
 }

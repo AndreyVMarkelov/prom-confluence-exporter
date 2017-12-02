@@ -1,6 +1,10 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import io.prometheus.client.Collector;
+import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 public interface MetricCollector {
     Collector getCollector();
@@ -17,4 +21,6 @@ public interface MetricCollector {
 
     void spaceCreateCounter(String username);
     void spaceDeleteCounter(String username);
+
+    void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException;
 }
