@@ -82,12 +82,12 @@ public class MetricCollectorImpl extends Collector implements MetricCollector {
 
     @Override
     public void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException {
-        Histogram.Timer level1Timer = isNotBlank(path) ? requestDurationOnPath.labels(path).startTimer() : null;
+        Histogram.Timer pathTimer = isNotBlank(path) ? requestDurationOnPath.labels(path).startTimer() : null;
         try {
             runnable.run();
         } finally {
-            if (level1Timer != null) {
-                level1Timer.observeDuration();
+            if (pathTimer != null) {
+                pathTimer.observeDuration();
             }
         }
     }

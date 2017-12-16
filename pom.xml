@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.andreymarkelov.atlas.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>atlassian-plugin</packaging>
 
     <organization>
@@ -65,6 +65,7 @@
                 <version>${amps.version}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <compressResources>false</compressResources>
                     <productVersion>${confluence.version}</productVersion>
                     <productDataVersion>${confluence.data.version}</productDataVersion>
                 </configuration>
@@ -73,16 +74,16 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <properties>
-        <confluence.version>5.8.6</confluence.version>
-        <confluence.data.version>5.8.6</confluence.data.version>
+        <confluence.version>5.4.1</confluence.version>
+        <confluence.data.version>${confluence.version}</confluence.data.version>
         <amps.version>6.3.6</amps.version>
         <useFastdevCli>false</useFastdevCli>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

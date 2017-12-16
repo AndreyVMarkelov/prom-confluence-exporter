@@ -6,7 +6,7 @@
         <param name="plugin-logo">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/prom-exporter.png</param>
         <param name="plugin-icon">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/prom-exporter-sm.png</param>
         <param name="vendor-icon">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/32.jpg</param>
-        <param name="vendor-logo">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images//144.jpg</param>
+        <param name="vendor-logo">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/144.jpg</param>
         <param name="configure.url">/admin/prommetrics/settings.action</param>
         <param name="atlassian-data-center-compatible">true</param>
     </plugin-info>
@@ -17,6 +17,7 @@
     <!-- Web Resources -->
     <web-resource name="Web Resources" key="prom-for-confluence-exporter-resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <resource type="download" name="vue.min.js" location="/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/js/vue.min.js"/>
         <resource type="download" name="images/" location="/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images"/>
         <context>prom-for-confluence-exporter</context>
     </web-resource>
@@ -31,7 +32,7 @@
 
     <!-- Actions -->
     <xwork name="Security Token Actions" key="prom-for-confluence-exporter-actions">
-        <package name="sendmail-admin" extends="default" namespace="/admin/prommetrics">
+        <package name="prom-for-confluence-exporter-action-admin" extends="default" namespace="/admin/prommetrics">
             <default-interceptor-ref name="defaultStack"/>
             <action name="settings" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.action.admin.SecureTokenConfigAction" method="doDefault">
                 <result name="input" type="velocity">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/templates/actions/admin/settings.vm</result>

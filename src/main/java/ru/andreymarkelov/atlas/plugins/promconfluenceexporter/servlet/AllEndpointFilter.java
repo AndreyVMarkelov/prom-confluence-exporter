@@ -3,6 +3,7 @@ package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.servlet;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.UrlMode;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector;
+import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -35,7 +36,12 @@ public class AllEndpointFilter implements Filter {
         }
 
         String path = removeStart(((HttpServletRequest) servletRequest).getRequestURI(), applicationProperties.getBaseUrl(UrlMode.RELATIVE));
-        metricCollector.requestDuration(getComponents(path, 1), () -> filterChain.doFilter(servletRequest, servletResponse));
+        metricCollector.requestDuration(getComponents(path, 1), new ExceptionRunnable() {
+            @Override
+            public void run() throws IOException, ServletException {
+                filterChain.doFilter(servletRequest, servletResponse);
+            }
+        });
     }
 
     @Override
