@@ -1,8 +1,6 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.servlet;
 
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
-import io.prometheus.client.hotspot.DefaultExports;
 import org.apache.commons.lang3.StringUtils;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManager;
@@ -19,16 +17,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PrometheusExporter extends HttpServlet {
-    private final CollectorRegistry registry;
+    private final MetricCollector metricCollector;
     private final SecureTokenManager secureTokenManager;
 
     public PrometheusExporter(
             MetricCollector metricCollector,
             SecureTokenManager secureTokenManager) {
+        this.metricCollector = metricCollector;
         this.secureTokenManager = secureTokenManager;
-        this.registry = CollectorRegistry.defaultRegistry;
-        this.registry.register(metricCollector.getCollector());
-        DefaultExports.initialize();
     }
 
     @Override
@@ -47,7 +43,7 @@ public class PrometheusExporter extends HttpServlet {
         httpServletResponse.setContentType(TextFormat.CONTENT_TYPE_004);
 
         try (Writer writer = httpServletResponse.getWriter()) {
-            TextFormat.write004(writer, registry.filteredMetricFamilySamples(parse(httpServletRequest)));
+            TextFormat.write004(writer, metricCollector.getRegistry().filteredMetricFamilySamples(parse(httpServletRequest)));
             writer.flush();
         }
     }

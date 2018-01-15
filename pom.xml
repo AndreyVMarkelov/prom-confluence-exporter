@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.andreymarkelov.atlas.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>atlassian-plugin</packaging>
 
     <organization>
@@ -27,16 +27,19 @@
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient</artifactId>
             <version>0.0.26</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_common</artifactId>
             <version>0.0.26</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_hotspot</artifactId>
             <version>0.0.26</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -51,8 +54,14 @@
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.3</version>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+            <version>1.1.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -82,7 +91,7 @@
     </build>
 
     <properties>
-        <confluence.version>5.4.1</confluence.version>
+        <confluence.version>6.5.2</confluence.version>
         <confluence.data.version>${confluence.version}</confluence.data.version>
         <amps.version>6.3.6</amps.version>
         <useFastdevCli>false</useFastdevCli>
