@@ -1,7 +1,8 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import com.atlassian.confluence.cluster.ClusterManager;
-import com.atlassian.confluence.license.LicenseWebFacade;
+import com.atlassian.confluence.license.LicenseService;
+import com.atlassian.confluence.license.exception.LicenseException;
 import com.atlassian.confluence.pages.PageManager;
 import com.atlassian.confluence.spaces.SpaceManager;
 import com.atlassian.confluence.status.service.SystemInformationService;
@@ -30,13 +31,14 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class MetricCollectorImpl extends Collector implements MetricCollector, DisposableBean, InitializingBean {
     private static final Logger log = LoggerFactory.getLogger(MetricCollectorImpl.class);
 
-    private final CollectorRegistry registry;
     private final PageManager pageManager;
     private final SpaceManager spaceManager;
     private final ClusterManager clusterManager;
     private final UserAccessor userAccessor;
     private final SystemInformationService systemInformationService;
-    private final LicenseWebFacade webLicenseFacade;
+    private final LicenseService licenseService;
+    private final ScheduledMetricEvaluator scheduledMetricEvaluator;
+    private final CollectorRegistry registry;
 
     public MetricCollectorImpl(
             PageManager pageManager,
@@ -44,13 +46,15 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             ClusterManager clusterManager,
             UserAccessor userAccessor,
             SystemInformationService systemInformationService,
-            LicenseWebFacade webLicenseFacade) {
+            LicenseService licenseService,
+            ScheduledMetricEvaluator scheduledMetricEvaluator) {
         this.pageManager = pageManager;
         this.spaceManager = spaceManager;
         this.clusterManager = clusterManager;
         this.userAccessor = userAccessor;
         this.systemInformationService = systemInformationService;
-        this.webLicenseFacade = webLicenseFacade;
+        this.licenseService = licenseService;
+        this.scheduledMetricEvaluator = scheduledMetricEvaluator;
         this.registry = CollectorRegistry.defaultRegistry;
     }
 
@@ -67,6 +71,11 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     private final Gauge allowedUsersGauge = Gauge.build()
             .name("confluence_allowed_users_gauge")
             .help("Allowed Users Gauge")
+            .create();
+
+    private final Gauge totalAttachmentSizeGauge = Gauge.build()
+            .name("confluence_total_attachment_size_gauge")
+            .help("Total Attachments Size Gauge")
             .create();
 
     private final Histogram requestDurationOnPath = Histogram.build()
@@ -212,14 +221,19 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         totalClusterNodeGauge.set(clusterManager.getClusterInformation().getMemberCount());
 
         // license
-        ConfluenceLicense confluenceLicense = webLicenseFacade.retrieve().right().getOrNull();
-        if (confluenceLicense != null) {
+        try {
+            ConfluenceLicense confluenceLicense = licenseService.retrieve();
             maintenanceExpiryDaysGauge.set(confluenceLicense.getNumberOfDaysBeforeMaintenanceExpiry());
             allowedUsersGauge.set(confluenceLicense.getMaximumNumberOfUsers());
+        } catch (LicenseException ex) {
+            log.error("Cannot retrieve license", ex);
         }
 
         // users
         activeUsersGauge.set(userAccessor.countUsersWithConfluenceAccess());
+
+        // attachment size
+        totalAttachmentSizeGauge.set(scheduledMetricEvaluator.getTotalAttachmentSize());
 
         List<MetricFamilySamples> result = new ArrayList<>();
         result.addAll(clusterPanicCounter.collect());
@@ -234,6 +248,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(maintenanceExpiryDaysGauge.collect());
         result.addAll(allowedUsersGauge.collect());
         result.addAll(activeUsersGauge.collect());
+        result.addAll(totalAttachmentSizeGauge.collect());
         return result;
     }
 
@@ -251,12 +266,12 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         this.registry.unregister(this);
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         this.registry.register(this);
         DefaultExports.initialize();
     }
