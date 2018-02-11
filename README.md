@@ -1,4 +1,5 @@
-# Prometheus Exporter For Confluence
+# Prometheus Exporter For Confluence [![Build Status](https://travis-ci.org/AndreyVMarkelov/prom-confluence-exporter.svg?branch=master)](https://travis-ci.org/AndreyVMarkelov/prom-confluence-exporter)
+
 
 This is Confluence plugin which provides endpoint to expose Confluence metrics to Prometheus.
 
