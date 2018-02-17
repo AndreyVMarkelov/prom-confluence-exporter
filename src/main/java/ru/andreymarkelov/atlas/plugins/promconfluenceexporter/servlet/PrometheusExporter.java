@@ -30,7 +30,7 @@ public class PrometheusExporter extends HttpServlet {
     @Override
     protected void doGet(
             final HttpServletRequest httpServletRequest,
-            final HttpServletResponse httpServletResponse) throws ServletException, IOException {
+            final HttpServletResponse httpServletResponse) throws IOException {
         String paramToken = httpServletRequest.getParameter("token");
         String storedToken = secureTokenManager.getToken();
 
