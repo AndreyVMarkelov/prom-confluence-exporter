@@ -6,7 +6,6 @@ import com.atlassian.confluence.license.exception.LicenseException;
 import com.atlassian.confluence.pages.PageManager;
 import com.atlassian.confluence.spaces.SpaceManager;
 import com.atlassian.confluence.status.service.SystemInformationService;
-import com.atlassian.confluence.user.UserAccessor;
 import com.atlassian.extras.api.confluence.ConfluenceLicense;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
@@ -34,7 +33,6 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     private final PageManager pageManager;
     private final SpaceManager spaceManager;
     private final ClusterManager clusterManager;
-    private final UserAccessor userAccessor;
     private final SystemInformationService systemInformationService;
     private final LicenseService licenseService;
     private final ScheduledMetricEvaluator scheduledMetricEvaluator;
@@ -44,14 +42,12 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             PageManager pageManager,
             SpaceManager spaceManager,
             ClusterManager clusterManager,
-            UserAccessor userAccessor,
             SystemInformationService systemInformationService,
             LicenseService licenseService,
             ScheduledMetricEvaluator scheduledMetricEvaluator) {
         this.pageManager = pageManager;
         this.spaceManager = spaceManager;
         this.clusterManager = clusterManager;
-        this.userAccessor = userAccessor;
         this.systemInformationService = systemInformationService;
         this.licenseService = licenseService;
         this.scheduledMetricEvaluator = scheduledMetricEvaluator;
@@ -230,7 +226,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         }
 
         // users
-        activeUsersGauge.set(userAccessor.countUsersWithConfluenceAccess());
+        activeUsersGauge.set(scheduledMetricEvaluator.getTotalUsers());
 
         // attachment size
         totalAttachmentSizeGauge.set(scheduledMetricEvaluator.getTotalAttachmentSize());

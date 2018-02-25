@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.andreymarkelov.atlas.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <packaging>atlassian-plugin</packaging>
+
+    <name>Prometheus Exporter For Confluence</name>
+    <description>This plugin for Atlassian Confluence provides endpoint to export metrics to prometheus.</description>
 
     <organization>
         <name>Andrey Markelov</name>
         <url>http://ru.linkedin.com/in/andreymarkelov/</url>
     </organization>
-
-    <name>Prometheus Exporter For Confluence</name>
-    <description>This plugin for Atlassian Confluence provides endpoint to export metrics to prometheus.</description>
 
     <dependencies>
         <dependency>
@@ -87,7 +85,7 @@
     <properties>
         <confluence.version>5.8.6</confluence.version>
         <confluence.data.version>${confluence.version}</confluence.data.version>
-        <amps.version>6.3.6</amps.version>
+        <amps.version>6.3.15</amps.version>
         <prometheus.version>0.2.0</prometheus.version>
         <useFastdevCli>false</useFastdevCli>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

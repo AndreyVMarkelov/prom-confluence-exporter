@@ -1,6 +1,7 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import com.atlassian.confluence.security.login.LoginManager;
+import com.atlassian.confluence.user.UserAccessor;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
@@ -15,6 +16,7 @@ import java.sql.Statement;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.Thread.MIN_PRIORITY;
@@ -28,14 +30,20 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
 
     private final SessionFactory sessionFactory;
     private final LoginManager loginManager;
+    private final UserAccessor userAccessor;
+
     private final AtomicLong totalAttachmentSize;
+    private final AtomicInteger totalUsers;
 
     public ScheduledMetricEvaluatorImpl(
             SessionFactory sessionFactory,
-            LoginManager loginManager) {
+            LoginManager loginManager,
+            UserAccessor userAccessor) {
         this.sessionFactory = sessionFactory;
         this.loginManager = loginManager;
+        this.userAccessor = userAccessor;
         this.totalAttachmentSize = new AtomicLong(0);
+        this.totalUsers = new AtomicInteger(0);
     }
 
     /**
@@ -56,6 +64,11 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     }
 
     @Override
+    public int getTotalUsers() {
+        return totalUsers.get();
+    }
+
+    @Override
     public void destroy() {
         executorService.shutdown();
         try {
@@ -72,12 +85,21 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
+                calculateTotalUsers();
                 calculateTotalAttachmentSize();
             }
         }, 0, 1, TimeUnit.MINUTES);
     }
 
-    public void calculateTotalAttachmentSize() {
+    private void calculateTotalUsers() {
+        try {
+            totalUsers.set(userAccessor.countLicenseConsumingUsers());
+        } catch (Throwable th) {
+            log.error("Cannot get list users with access", th);
+        }
+    }
+
+    private void calculateTotalAttachmentSize() {
         Session session = null;
         Transaction transaction = null;
         try {
@@ -85,7 +107,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
             transaction = session.beginTransaction();
             try (Statement statement = session.connection().createStatement(); ResultSet rs = statement.executeQuery(ATTACHMENT_SQL)) {
                 if (rs.next()) {
-                    totalAttachmentSize.set(rs.getInt(1));
+                    totalAttachmentSize.set(rs.getLong(1));
                 }
             }
             transaction.commit();
