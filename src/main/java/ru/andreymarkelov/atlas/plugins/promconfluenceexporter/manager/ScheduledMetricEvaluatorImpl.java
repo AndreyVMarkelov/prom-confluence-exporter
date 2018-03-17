@@ -87,8 +87,18 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
             public void run() {
                 calculateTotalUsers();
                 calculateTotalAttachmentSize();
+                calculate24HourSessions();
+                calculate1HourSessions();
             }
         }, 0, 1, TimeUnit.MINUTES);
+    }
+
+    private void calculate24HourSessions() {
+
+    }
+
+    private void calculate1HourSessions() {
+
     }
 
     private void calculateTotalUsers() {
