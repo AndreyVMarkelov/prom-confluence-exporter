@@ -5,7 +5,6 @@ import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScheduledM
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManager;
 
 import java.util.Date;
-import java.util.Map;
 
 public class SecureTokenConfigAction extends ConfluenceActionSupport {
     private SecureTokenManager secureTokenManager;
@@ -21,12 +20,12 @@ public class SecureTokenConfigAction extends ConfluenceActionSupport {
     private String lastExecutionTimestamp;
 
     @Override
-    public String doDefault() throws Exception {
+    public String doDefault() {
         token = secureTokenManager.getToken();
         delay = scheduledMetricEvaluator.getDelay();
         long temp = scheduledMetricEvaluator.getLastExecutionTimestamp();
 
-        if(temp > 0){
+        if (temp > 0) {
             lastExecutionTimestamp = new Date(temp).toString();
         } else {
             lastExecutionTimestamp = getI18n().getText(NOT_YET_EXECUTED);
@@ -36,15 +35,15 @@ public class SecureTokenConfigAction extends ConfluenceActionSupport {
     }
 
     @Override
-    public void validate(){
-        if(delay <= 0){
+    public void validate() {
+        if (delay <= 0) {
             addFieldError("delay", getI18n().getText(ERROR_INVALID_DELAY));
         }
     }
 
     @Override
-    public String execute() throws Exception {
-        if(hasErrors()){
+    public String execute() {
+        if(hasErrors()) {
             return ERROR;
         }
         secureTokenManager.setToken(token);
