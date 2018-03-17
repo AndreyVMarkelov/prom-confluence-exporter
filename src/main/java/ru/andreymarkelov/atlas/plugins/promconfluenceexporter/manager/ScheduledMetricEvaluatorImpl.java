@@ -216,7 +216,6 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
                     totalAttachmentSize.set(rs.getLong(1));
                 }
             }
-            transaction.commit();
         } catch (Throwable th) {
             if (transaction != null) {
                 try {
