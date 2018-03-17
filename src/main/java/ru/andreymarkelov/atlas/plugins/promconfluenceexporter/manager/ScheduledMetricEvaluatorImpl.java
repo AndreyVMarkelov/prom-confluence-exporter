@@ -2,8 +2,6 @@ package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import com.atlassian.confluence.security.login.LoginManager;
 import com.atlassian.confluence.user.UserAccessor;
-import com.atlassian.sal.api.pluginsettings.PluginSettings;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
@@ -132,25 +130,18 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
                 calculateTotalUsers();
                 calculateTotalAttachmentSize();
                 lastExecutionTimestamp.set(System.currentTimeMillis());
+                calculate24HourSessions();
+                calculate1HourSessions();
             }
         }, 0, delay, TimeUnit.MINUTES);
     }
 
-    private void stopScraping(){
-        boolean success = scraper.cancel(true);
-        if(!success){
-            log.debug("Unable to cancel scraping, typically because it has already completed.");
-        }
+    private void calculate24HourSessions() {
+
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        lock.lock();
-        try {
-            startScraping(getDelay());
-        } finally{
-            lock.unlock();
-        }
+    private void calculate1HourSessions() {
+
     }
 
     private void calculateTotalUsers() {
