@@ -102,6 +102,23 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
         }
     }
 
+    private void stopScraping() {
+        boolean success = scraper.cancel(true);
+        if (!success){
+            log.debug("Unable to cancel scraping, typically because it has already completed.");
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        lock.lock();
+        try {
+            startScraping(getDelay());
+        } finally{
+            lock.unlock();
+        }
+    }
+
     @Override
     public int getDelay() {
         String storedValue = (String) pluginSettings.get("delay");
