@@ -7,7 +7,31 @@
     </head>
     <body>
         #parse ("/template/includes/actionerrors.vm")
+        <header class="aui-page-header">
+            <div class="aui-page-header-inner">
+                <div class="aui-page-header-main">
+                    <p>$i18n.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.section.desc")</p>
+                    <p>
+                        <span class="aui-icon aui-icon-small aui-iconfont-info"></span>
+                        $action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.linkdesc")
+                        <a target="_blank" href="/confluence/plugins/servlet/prometheus/metrics#if($!{token} != "")?token=${token}#end">$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.link")</a>.
+                    </p>
+                    <p>
+                        <span class="aui-icon aui-icon-small aui-iconfont-info"></span>
+                        $action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.lastexecution") ${lastExecutionTimestamp}
+                    </p>
+                </div>
+            </div>
+        </header>
         <div>
+            #if ($saved)
+            <div class="aui-message closeable shadowed">
+                <p class="title">
+                    <span class="aui-icon icon-success"></span>
+                    <strong>$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.status.success")</strong>
+                </p>
+            </div>
+            #end
             <div id="base-form">
                 <form method="POST" action="savesettings.action" name="savesettings" class="aui">
                     #form_xsrfToken()
@@ -19,6 +43,12 @@
                         <div class="error" id="days-error">$action.getFieldErrors().get("token").get(0)</div>
                         #end
                         <div class="description">$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.token.desc")</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="delay">$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.delay"):<span class="aui-icon icon-required">required</span></label>
+                        <input id="delay" name="delay" v-model="storedDelay" type="number" min=1 class="text">
+                        #if($action.getErrors().containsKey("delay"))<div class="error">$action.getErrors().get("delay")</div>#end
+                        <div class="description">$i18n.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.delay.desc")</div>
                     </div>
                     <div class="buttons-container">
                         <div class="buttons">
@@ -34,6 +64,7 @@
                 data() {
                     return {
                         storedToken: "$!{token}",
+                        storedDelay: "$!{delay}",
                         possible: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
                     }
                 },
