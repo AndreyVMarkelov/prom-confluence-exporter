@@ -64,6 +64,16 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .help("Active Users Gauge")
             .create();
 
+    private final Gauge totalOneHourAgoActiveUsersGauge = Gauge.build()
+            .name("confluence_one_hour_active_users_gauge")
+            .help("Users Login One Hour Ago Gauge")
+            .create();
+
+    private final Gauge totalTodayActiveUsers = Gauge.build()
+            .name("confluence_today_active_users_gauge")
+            .help("Users Login Today Gauge")
+            .create();
+
     private final Gauge allowedUsersGauge = Gauge.build()
             .name("confluence_allowed_users_gauge")
             .help("Allowed Users Gauge")
@@ -227,6 +237,8 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
 
         // users
         activeUsersGauge.set(scheduledMetricEvaluator.getTotalUsers());
+        totalOneHourAgoActiveUsersGauge.set(scheduledMetricEvaluator.getTotalOneHourAgoActiveUsers());
+        totalTodayActiveUsers.set(scheduledMetricEvaluator.getTotalTodayActiveUsers());
 
         // attachment size
         totalAttachmentSizeGauge.set(scheduledMetricEvaluator.getTotalAttachmentSize());
@@ -244,6 +256,8 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(maintenanceExpiryDaysGauge.collect());
         result.addAll(allowedUsersGauge.collect());
         result.addAll(activeUsersGauge.collect());
+        result.addAll(totalOneHourAgoActiveUsersGauge.collect());
+        result.addAll(totalTodayActiveUsers.collect());
         result.addAll(totalAttachmentSizeGauge.collect());
         return result;
     }
