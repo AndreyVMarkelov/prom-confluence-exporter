@@ -2,6 +2,8 @@ package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import com.atlassian.confluence.security.login.LoginManager;
 import com.atlassian.confluence.user.UserAccessor;
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
