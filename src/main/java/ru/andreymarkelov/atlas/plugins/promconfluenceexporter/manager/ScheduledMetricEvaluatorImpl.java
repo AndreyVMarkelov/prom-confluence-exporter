@@ -177,6 +177,9 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
         try {
             for (User user : userAccessor.getUsers()) {
                 LoginInfo loginInfo = loginManager.getLoginInfo(user);
+                if (loginInfo == null) {
+                    continue;
+                }
                 long lastSuccessfulLoginTs = loginInfo.getLastSuccessfulLoginDate().getTime();
                 long oneHourAgo = System.currentTimeMillis() - 3600 * 1000;
                 long today = DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime();
