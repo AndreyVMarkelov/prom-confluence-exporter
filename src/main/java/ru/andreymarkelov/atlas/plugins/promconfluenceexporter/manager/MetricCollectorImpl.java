@@ -5,7 +5,6 @@ import com.atlassian.confluence.license.LicenseService;
 import com.atlassian.confluence.license.exception.LicenseException;
 import com.atlassian.confluence.pages.PageManager;
 import com.atlassian.confluence.spaces.SpaceManager;
-import com.atlassian.confluence.status.service.SystemInformationService;
 import com.atlassian.extras.api.confluence.ConfluenceLicense;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
@@ -33,7 +32,6 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     private final PageManager pageManager;
     private final SpaceManager spaceManager;
     private final ClusterManager clusterManager;
-    private final SystemInformationService systemInformationService;
     private final LicenseService licenseService;
     private final ScheduledMetricEvaluator scheduledMetricEvaluator;
     private final CollectorRegistry registry;
@@ -42,13 +40,11 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             PageManager pageManager,
             SpaceManager spaceManager,
             ClusterManager clusterManager,
-            SystemInformationService systemInformationService,
             LicenseService licenseService,
             ScheduledMetricEvaluator scheduledMetricEvaluator) {
         this.pageManager = pageManager;
         this.spaceManager = spaceManager;
         this.clusterManager = clusterManager;
-        this.systemInformationService = systemInformationService;
         this.licenseService = licenseService;
         this.scheduledMetricEvaluator = scheduledMetricEvaluator;
         this.registry = CollectorRegistry.defaultRegistry;
@@ -88,6 +84,21 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .name("confluence_request_duration_on_path")
             .help("Request duration on path")
             .labelNames("path")
+            .create();
+
+    private final Gauge totalCurrentContentGauge = Gauge.build()
+            .name("confluence_current_contents_gauge")
+            .help("Current Contents Gauge")
+            .create();
+
+    private final Gauge totalGlobalSpacesGauge = Gauge.build()
+            .name("confluence_global_spaces_gauge")
+            .help("Global Spaces Gauge")
+            .create();
+
+    private final Gauge totalPersonalSpacesGauge = Gauge.build()
+            .name("confluence_personal_spaces_gauge")
+            .help("Personal Spaces Gauge")
             .create();
 
     //--> Cluster
@@ -240,6 +251,11 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         totalOneHourAgoActiveUsersGauge.set(scheduledMetricEvaluator.getTotalOneHourAgoActiveUsers());
         totalTodayActiveUsers.set(scheduledMetricEvaluator.getTotalTodayActiveUsers());
 
+        // usage
+        totalCurrentContentGauge.set(scheduledMetricEvaluator.getTotalCurrentContent());
+        totalGlobalSpacesGauge.set(scheduledMetricEvaluator.getTotalGlobalSpaces());
+        totalPersonalSpacesGauge.set(scheduledMetricEvaluator.getTotalPersonalSpaces());
+
         // attachment size
         totalAttachmentSizeGauge.set(scheduledMetricEvaluator.getTotalAttachmentSize());
 
@@ -256,6 +272,9 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(maintenanceExpiryDaysGauge.collect());
         result.addAll(allowedUsersGauge.collect());
         result.addAll(activeUsersGauge.collect());
+        result.addAll(totalCurrentContentGauge.collect());
+        result.addAll(totalGlobalSpacesGauge.collect());
+        result.addAll(totalPersonalSpacesGauge.collect());
         result.addAll(totalOneHourAgoActiveUsersGauge.collect());
         result.addAll(totalTodayActiveUsers.collect());
         result.addAll(totalAttachmentSizeGauge.collect());

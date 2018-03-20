@@ -5,6 +5,9 @@ public interface ScheduledMetricEvaluator {
     int getTotalUsers();
     int getTotalOneHourAgoActiveUsers();
     int getTotalTodayActiveUsers();
+    int getTotalCurrentContent();
+    int getTotalGlobalSpaces();
+    int getTotalPersonalSpaces();
     long getLastExecutionTimestamp();
     void restartScraping(int newDelay);
     int getDelay();

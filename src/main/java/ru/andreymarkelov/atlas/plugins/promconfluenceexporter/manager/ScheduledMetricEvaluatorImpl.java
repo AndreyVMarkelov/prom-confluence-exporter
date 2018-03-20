@@ -2,6 +2,8 @@ package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import com.atlassian.confluence.security.login.LoginInfo;
 import com.atlassian.confluence.security.login.LoginManager;
+import com.atlassian.confluence.status.service.SystemInformationService;
+import com.atlassian.confluence.status.service.systeminfo.UsageInfo;
 import com.atlassian.confluence.user.UserAccessor;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -43,6 +45,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private final SessionFactory sessionFactory;
     private final LoginManager loginManager;
     private final UserAccessor userAccessor;
+    private final SystemInformationService systemInformationService;
 
     /**
      * Scheduled executor to grab metrics.
@@ -54,6 +57,10 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private final AtomicInteger totalUsers;
     private final AtomicInteger totalOneHourAgoActiveUsers;
     private final AtomicInteger totalTodayActiveUsers;
+    private final AtomicInteger totalCurrentContent;
+    private final AtomicInteger totalGlobalSpaces;
+    private final AtomicInteger totalPersonalSpaces;
+
     private final AtomicLong lastExecutionTimestamp;
 
     private ScheduledFuture<?> scraper;
@@ -62,15 +69,20 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
             PluginSettingsFactory pluginSettingsFactory,
             SessionFactory sessionFactory,
             LoginManager loginManager,
-            UserAccessor userAccessor) {
+            UserAccessor userAccessor,
+            SystemInformationService systemInformationService) {
         this.pluginSettings = pluginSettingsFactory.createSettingsForKey("PLUGIN_PROMETHEUS_FOR_CONFLUENCE");
         this.sessionFactory = sessionFactory;
         this.loginManager = loginManager;
         this.userAccessor = userAccessor;
+        this.systemInformationService = systemInformationService;
         this.totalAttachmentSize = new AtomicLong(0);
         this.totalUsers = new AtomicInteger(0);
         this.totalOneHourAgoActiveUsers = new AtomicInteger(0);
         this.totalTodayActiveUsers = new AtomicInteger(0);
+        this.totalCurrentContent = new AtomicInteger(0);
+        this.totalGlobalSpaces = new AtomicInteger(0);
+        this.totalPersonalSpaces = new AtomicInteger(0);
         this.lastExecutionTimestamp = new AtomicLong(-1);
         this.executorService = newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
@@ -106,6 +118,21 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     @Override
     public long getLastExecutionTimestamp() {
         return lastExecutionTimestamp.get();
+    }
+
+    @Override
+    public int getTotalCurrentContent() {
+        return totalCurrentContent.get();
+    }
+
+    @Override
+    public int getTotalGlobalSpaces() {
+        return totalGlobalSpaces.get();
+    }
+
+    @Override
+    public int getTotalPersonalSpaces() {
+        return totalPersonalSpaces.get();
     }
 
     @Override
@@ -166,6 +193,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
                 calculateTotalUsers();
                 calculateTotalAttachmentSize();
                 calculateSessions();
+                calculateUsageInfo();
                 lastExecutionTimestamp.set(System.currentTimeMillis());
             }
         }, 0, delay, TimeUnit.MINUTES);
@@ -180,7 +208,13 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
                 if (loginInfo == null) {
                     continue;
                 }
-                long lastSuccessfulLoginTs = loginInfo.getLastSuccessfulLoginDate().getTime();
+
+                Date lastSuccessfulLoginDate = loginInfo.getLastSuccessfulLoginDate();
+                if (lastSuccessfulLoginDate == null) {
+                    continue;
+                }
+
+                long lastSuccessfulLoginTs = lastSuccessfulLoginDate.getTime();
                 long oneHourAgo = System.currentTimeMillis() - 3600 * 1000;
                 long today = DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH).getTime();
                 if (lastSuccessfulLoginTs >= oneHourAgo) {
@@ -202,6 +236,22 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
             totalUsers.set(userAccessor.countLicenseConsumingUsers());
         } catch (Throwable th) {
             log.error("Cannot get list users with access", th);
+        }
+    }
+
+    /**
+     * Calculate usage information.
+     */
+    private void calculateUsageInfo() {
+        try {
+            UsageInfo usageInfo = systemInformationService.getUsageInfo();
+            if (usageInfo != null) {
+                totalCurrentContent.set(usageInfo.getCurrentContent());
+                totalGlobalSpaces.set(usageInfo.getGlobalSpaces());
+                totalPersonalSpaces.set(usageInfo.getPersonalSpaces());
+            }
+        } catch (Exception ex) {
+            log.error("Error read usage info", ex);
         }
     }
 
