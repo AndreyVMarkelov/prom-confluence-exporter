@@ -41,7 +41,7 @@
                 <interceptor-ref name="validatingStack"/>
                 <param name="RequireSecurityToken">true</param>
                 <result name="input" type="velocity">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/templates/actions/admin/settings.vm</result>
-                <result name="success" type="redirect">/admin/prommetrics/settings.action</result>
+                <result name="success" type="redirect">/admin/prommetrics/settings.action?saved=true</result>
             </action>
         </package>
     </xwork>
