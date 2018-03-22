@@ -40,6 +40,8 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private static final Logger log = LoggerFactory.getLogger(ScheduledMetricEvaluator.class);
 
     private static final String ATTACHMENT_SQL = "SELECT sum(LONGVAL) FROM contentproperties cp JOIN content c ON cp.contentid = c.contentid WHERE c.contenttype = 'ATTACHMENT' AND cp.propertyname = 'FILESIZE'";
+    private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM content WHERE contenttype = 'PAGE' AND prevver IS NULL AND content_status = 'current'";
+    private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM content WHERE contenttype = 'BLOGPOST' AND prevver IS NULL AND content_status = 'current'";
 
     private final PluginSettings pluginSettings;
     private final SessionFactory sessionFactory;
@@ -54,6 +56,8 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private final Lock lock;
 
     private final AtomicLong totalAttachmentSize;
+    private final AtomicInteger totalPages;
+    private final AtomicInteger totalBlogPosts;
     private final AtomicInteger totalUsers;
     private final AtomicInteger totalOneHourAgoActiveUsers;
     private final AtomicInteger totalTodayActiveUsers;
@@ -77,6 +81,8 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
         this.userAccessor = userAccessor;
         this.systemInformationService = systemInformationService;
         this.totalAttachmentSize = new AtomicLong(0);
+        this.totalPages = new AtomicInteger(0);
+        this.totalBlogPosts = new AtomicInteger(0);
         this.totalUsers = new AtomicInteger(0);
         this.totalOneHourAgoActiveUsers = new AtomicInteger(0);
         this.totalTodayActiveUsers = new AtomicInteger(0);
@@ -98,6 +104,16 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     @Override
     public long getTotalAttachmentSize() {
         return totalAttachmentSize.get();
+    }
+
+    @Override
+    public int getTotalPages() {
+        return totalPages.get();
+    }
+
+    @Override
+    public int getTotalBlogPosts() {
+        return totalBlogPosts.get();
     }
 
     @Override
@@ -261,9 +277,21 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
         try {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
-            try (Statement statement = session.connection().createStatement(); ResultSet rs = statement.executeQuery(ATTACHMENT_SQL)) {
-                if (rs.next()) {
-                    totalAttachmentSize.set(rs.getLong(1));
+            try (Statement statement = session.connection().createStatement()) {
+                try (ResultSet rs = statement.executeQuery(ATTACHMENT_SQL)) {
+                    if (rs.next()) {
+                        totalAttachmentSize.set(rs.getLong(1));
+                    }
+                }
+                try (ResultSet rs = statement.executeQuery(PAGE_SQL)) {
+                    if (rs.next()) {
+                        totalPages.set(rs.getInt(1));
+                    }
+                }
+                try (ResultSet rs = statement.executeQuery(BLOGPOST_SQL)) {
+                    if (rs.next()) {
+                        totalBlogPosts.set(rs.getInt(1));
+                    }
                 }
             }
         } catch (Throwable th) {

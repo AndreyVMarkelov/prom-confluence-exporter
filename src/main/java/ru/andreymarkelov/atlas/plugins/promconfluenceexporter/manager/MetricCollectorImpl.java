@@ -3,8 +3,6 @@ package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 import com.atlassian.confluence.cluster.ClusterManager;
 import com.atlassian.confluence.license.LicenseService;
 import com.atlassian.confluence.license.exception.LicenseException;
-import com.atlassian.confluence.pages.PageManager;
-import com.atlassian.confluence.spaces.SpaceManager;
 import com.atlassian.extras.api.confluence.ConfluenceLicense;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
@@ -29,21 +27,15 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class MetricCollectorImpl extends Collector implements MetricCollector, DisposableBean, InitializingBean {
     private static final Logger log = LoggerFactory.getLogger(MetricCollectorImpl.class);
 
-    private final PageManager pageManager;
-    private final SpaceManager spaceManager;
     private final ClusterManager clusterManager;
     private final LicenseService licenseService;
     private final ScheduledMetricEvaluator scheduledMetricEvaluator;
     private final CollectorRegistry registry;
 
     public MetricCollectorImpl(
-            PageManager pageManager,
-            SpaceManager spaceManager,
             ClusterManager clusterManager,
             LicenseService licenseService,
             ScheduledMetricEvaluator scheduledMetricEvaluator) {
-        this.pageManager = pageManager;
-        this.spaceManager = spaceManager;
         this.clusterManager = clusterManager;
         this.licenseService = licenseService;
         this.scheduledMetricEvaluator = scheduledMetricEvaluator;
@@ -99,6 +91,16 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     private final Gauge totalPersonalSpacesGauge = Gauge.build()
             .name("confluence_personal_spaces_gauge")
             .help("Personal Spaces Gauge")
+            .create();
+
+    private final Gauge totalPagesGauge = Gauge.build()
+            .name("confluence_pages_gauge")
+            .help("Total Pages Gauge")
+            .create();
+
+    private final Gauge totalBlogPostsGauge = Gauge.build()
+            .name("confluence_blogposts_gauge")
+            .help("Total BlogPosts Gauge")
             .create();
 
     //--> Cluster
@@ -255,6 +257,8 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         totalCurrentContentGauge.set(scheduledMetricEvaluator.getTotalCurrentContent());
         totalGlobalSpacesGauge.set(scheduledMetricEvaluator.getTotalGlobalSpaces());
         totalPersonalSpacesGauge.set(scheduledMetricEvaluator.getTotalPersonalSpaces());
+        totalPagesGauge.set(scheduledMetricEvaluator.getTotalPages());
+        totalBlogPostsGauge.set(scheduledMetricEvaluator.getTotalBlogPosts());
 
         // attachment size
         totalAttachmentSizeGauge.set(scheduledMetricEvaluator.getTotalAttachmentSize());
@@ -278,6 +282,8 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(totalOneHourAgoActiveUsersGauge.collect());
         result.addAll(totalTodayActiveUsers.collect());
         result.addAll(totalAttachmentSizeGauge.collect());
+        result.addAll(totalPagesGauge.collect());
+        result.addAll(totalBlogPostsGauge.collect());
         return result;
     }
 

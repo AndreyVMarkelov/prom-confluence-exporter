@@ -14,7 +14,7 @@
                     <p>
                         <span class="aui-icon aui-icon-small aui-iconfont-info"></span>
                         $action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.linkdesc")
-                        <a target="_blank" href="/confluence/plugins/servlet/prometheus/metrics#if($!{token} != "")?token=${token}#end">$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.link")</a>.
+                        <a target="_blank" href="$req.contextPath/plugins/servlet/prometheus/metrics#if($!{token} != "")?token=${token}#end">$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.link")</a>.
                     </p>
                     <p>
                         <span class="aui-icon aui-icon-small aui-iconfont-info"></span>
@@ -23,15 +23,13 @@
                 </div>
             </div>
         </header>
+        #if ($saved)
+        <div class="aui-message closeable">
+            <p class="title">$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.status.success")</p>
+            <span class="aui-icon icon-success"></span>
+        </div>
+        #end
         <div>
-            #if ($saved)
-            <div class="aui-message closeable shadowed">
-                <p class="title">
-                    <span class="aui-icon icon-success"></span>
-                    <strong>$action.getText("ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.settings.status.success")</strong>
-                </p>
-            </div>
-            #end
             <div id="base-form">
                 <form method="POST" action="savesettings.action" name="savesettings" class="aui">
                     #form_xsrfToken()
