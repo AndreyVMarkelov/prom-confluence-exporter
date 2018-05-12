@@ -82,4 +82,5 @@
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties"/>
     <component-import key="licenseService" interface="com.atlassian.confluence.license.LicenseService"/>
     <component-import key="sessionFactory" interface="net.sf.hibernate.SessionFactory"/>
+    <component-import key="task-manager" interface="com.atlassian.core.task.MultiQueueTaskManager"/>
 </atlassian-plugin>

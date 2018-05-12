@@ -1,5 +1,19 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nonnull;
+
 import com.atlassian.confluence.security.login.LoginInfo;
 import com.atlassian.confluence.security.login.LoginManager;
 import com.atlassian.confluence.status.service.SystemInformationService;
@@ -18,20 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.annotation.Nonnull;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import static java.lang.Thread.MIN_PRIORITY;
 import static java.util.concurrent.Executors.defaultThreadFactory;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
@@ -39,9 +39,9 @@ import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, DisposableBean, InitializingBean {
     private static final Logger log = LoggerFactory.getLogger(ScheduledMetricEvaluator.class);
 
-    private static final String ATTACHMENT_SQL = "SELECT sum(LONGVAL) FROM contentproperties cp JOIN content c ON cp.contentid = c.contentid WHERE c.contenttype = 'ATTACHMENT' AND cp.propertyname = 'FILESIZE'";
-    private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM content WHERE contenttype = 'PAGE' AND prevver IS NULL AND content_status = 'current'";
-    private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM content WHERE contenttype = 'BLOGPOST' AND prevver IS NULL AND content_status = 'current'";
+    private static final String ATTACHMENT_SQL = "SELECT sum(LONGVAL) FROM CONTENTPROPERTIES cp JOIN CONTENT c ON cp.contentid = c.contentid WHERE c.contenttype = 'ATTACHMENT' AND cp.propertyname = 'FILESIZE'";
+    private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE contenttype = 'PAGE' AND prevver IS NULL AND content_status = 'current'";
+    private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE contenttype = 'BLOGPOST' AND prevver IS NULL AND content_status = 'current'";
 
     private final PluginSettings pluginSettings;
     private final SessionFactory sessionFactory;

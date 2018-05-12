@@ -1,8 +1,15 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.ServletException;
+
 import com.atlassian.confluence.cluster.ClusterManager;
 import com.atlassian.confluence.license.LicenseService;
 import com.atlassian.confluence.license.exception.LicenseException;
+import com.atlassian.core.task.ErrorQueuedTaskQueue;
+import com.atlassian.core.task.MultiQueueTaskManager;
 import com.atlassian.extras.api.confluence.ConfluenceLicense;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
@@ -16,12 +23,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import static java.util.Collections.emptyList;
+
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class MetricCollectorImpl extends Collector implements MetricCollector, DisposableBean, InitializingBean {
@@ -31,14 +34,17 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     private final LicenseService licenseService;
     private final ScheduledMetricEvaluator scheduledMetricEvaluator;
     private final CollectorRegistry registry;
+    private final MultiQueueTaskManager taskManager;
 
     public MetricCollectorImpl(
             ClusterManager clusterManager,
             LicenseService licenseService,
-            ScheduledMetricEvaluator scheduledMetricEvaluator) {
+            ScheduledMetricEvaluator scheduledMetricEvaluator,
+            MultiQueueTaskManager taskManager) {
         this.clusterManager = clusterManager;
         this.licenseService = licenseService;
         this.scheduledMetricEvaluator = scheduledMetricEvaluator;
+        this.taskManager = taskManager;
         this.registry = CollectorRegistry.defaultRegistry;
     }
 
@@ -169,6 +175,18 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .labelNames("username")
             .create();
 
+    //--> Mails
+
+    private final Gauge totalMailQueueGauge = Gauge.build()
+            .name("confluence_mail_queue_gauge")
+            .help("Current Mail Queue Gauge")
+            .create();
+
+    private final Gauge totalMailQueueErrorsGauge = Gauge.build()
+            .name("confluence_mail_queue_errors_gauge")
+            .help("Current Mail Queue Errors Gauge")
+            .create();
+
     @Override
     public void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException {
         Histogram.Timer pathTimer = isNotBlank(path) ? requestDurationOnPath.labels(path).startTimer() : null;
@@ -263,6 +281,11 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         // attachment size
         totalAttachmentSizeGauge.set(scheduledMetricEvaluator.getTotalAttachmentSize());
 
+        // mail queue
+        ErrorQueuedTaskQueue mailQueue = (ErrorQueuedTaskQueue) taskManager.getTaskQueue("mail");
+        totalMailQueueGauge.set(mailQueue.size());
+        totalMailQueueErrorsGauge.set(mailQueue.getErrorQueue().size());
+
         List<MetricFamilySamples> result = new ArrayList<>();
         result.addAll(clusterPanicCounter.collect());
         result.addAll(labelCreateCounter.collect());
@@ -284,6 +307,8 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(totalAttachmentSizeGauge.collect());
         result.addAll(totalPagesGauge.collect());
         result.addAll(totalBlogPostsGauge.collect());
+        result.addAll(totalMailQueueGauge.collect());
+        result.addAll(totalMailQueueErrorsGauge.collect());
         return result;
     }
 
