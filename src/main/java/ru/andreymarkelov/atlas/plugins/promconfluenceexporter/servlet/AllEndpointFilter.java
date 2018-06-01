@@ -1,10 +1,6 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.servlet;
 
-import com.atlassian.sal.api.ApplicationProperties;
-import com.atlassian.sal.api.UrlMode;
-import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector;
-import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
-
+import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -12,9 +8,14 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+
+import com.atlassian.sal.api.ApplicationProperties;
+import com.atlassian.sal.api.UrlMode;
+import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector;
+import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
 
 import static org.apache.commons.lang3.StringUtils.removeStart;
+import static org.apache.commons.lang3.StringUtils.startsWith;
 
 public class AllEndpointFilter implements Filter {
     private final MetricCollector metricCollector;
@@ -36,6 +37,7 @@ public class AllEndpointFilter implements Filter {
         }
 
         String path = removeStart(((HttpServletRequest) servletRequest).getRequestURI(), applicationProperties.getBaseUrl(UrlMode.RELATIVE));
+        path = processDummyCases(path); // process known dummy cases
         metricCollector.requestDuration(getComponents(path, 1), new ExceptionRunnable() {
             @Override
             public void run() throws IOException, ServletException {
@@ -45,7 +47,7 @@ public class AllEndpointFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(FilterConfig filterConfig) {
     }
 
     @Override
@@ -67,5 +69,12 @@ public class AllEndpointFilter implements Filter {
             count++;
         } while (count <= pathComponents);
         return (i >= pathComponents) ? str.substring(0, i) : null;
+    }
+
+    private String processDummyCases(String path) {
+        if (startsWith(path, "/login.action;jsessionid=")) {
+            return "/login.action";
+        }
+        return path;
     }
 }

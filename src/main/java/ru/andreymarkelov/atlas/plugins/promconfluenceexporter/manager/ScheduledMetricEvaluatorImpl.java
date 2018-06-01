@@ -19,6 +19,7 @@ import com.atlassian.confluence.security.login.LoginManager;
 import com.atlassian.confluence.status.service.SystemInformationService;
 import com.atlassian.confluence.status.service.systeminfo.UsageInfo;
 import com.atlassian.confluence.user.UserAccessor;
+import com.atlassian.confluence.util.UserChecker;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.user.User;
@@ -39,14 +40,16 @@ import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, DisposableBean, InitializingBean {
     private static final Logger log = LoggerFactory.getLogger(ScheduledMetricEvaluator.class);
 
-    private static final String ATTACHMENT_SQL = "SELECT sum(LONGVAL) FROM CONTENTPROPERTIES cp JOIN CONTENT c ON cp.contentid = c.contentid WHERE c.contenttype = 'ATTACHMENT' AND cp.propertyname = 'FILESIZE'";
-    private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE contenttype = 'PAGE' AND prevver IS NULL AND content_status = 'current'";
-    private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE contenttype = 'BLOGPOST' AND prevver IS NULL AND content_status = 'current'";
+    private static final String ATTACHMENT_SQL = "SELECT sum(LONGVAL) FROM CONTENTPROPERTIES cp JOIN CONTENT c ON cp.CONTENTID = c.CONTENTID WHERE c.CONTENTTYPE = 'ATTACHMENT' AND cp.PROPERTYNAME = 'FILESIZE'";
+    private static final String ATTACHMENT_SQL_OLD = "SELECT sum(FILESIZE) FROM ATTACHMENTS";
+    private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE CONTENTTYPE = 'PAGE' AND PREVVER IS NULL AND CONTENT_STATUS = 'current'";
+    private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE CONTENTTYPE = 'BLOGPOST' AND PREVVER IS NULL AND CONTENT_STATUS = 'current'";
 
     private final PluginSettings pluginSettings;
     private final SessionFactory sessionFactory;
     private final LoginManager loginManager;
     private final UserAccessor userAccessor;
+    private final UserChecker userChecker;
     private final SystemInformationService systemInformationService;
 
     /**
@@ -74,11 +77,13 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
             SessionFactory sessionFactory,
             LoginManager loginManager,
             UserAccessor userAccessor,
+            UserChecker userChecker,
             SystemInformationService systemInformationService) {
         this.pluginSettings = pluginSettingsFactory.createSettingsForKey("PLUGIN_PROMETHEUS_FOR_CONFLUENCE");
         this.sessionFactory = sessionFactory;
         this.loginManager = loginManager;
         this.userAccessor = userAccessor;
+        this.userChecker = userChecker;
         this.systemInformationService = systemInformationService;
         this.totalAttachmentSize = new AtomicLong(0);
         this.totalPages = new AtomicInteger(0);
@@ -249,7 +254,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
 
     private void calculateTotalUsers() {
         try {
-            totalUsers.set(userAccessor.countLicenseConsumingUsers());
+            totalUsers.set(userChecker.getNumberOfRegisteredUsers());
         } catch (Throwable th) {
             log.error("Cannot get list users with access", th);
         }
@@ -280,7 +285,16 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
             try (Statement statement = session.connection().createStatement()) {
                 try (ResultSet rs = statement.executeQuery(ATTACHMENT_SQL)) {
                     if (rs.next()) {
-                        totalAttachmentSize.set(rs.getLong(1));
+                        Long value = rs.getLong(1);
+                        if (rs.wasNull()) {
+                            try (ResultSet rs2 = statement.executeQuery(ATTACHMENT_SQL_OLD)) {
+                                if (rs2.next()) {
+                                    totalAttachmentSize.set(rs2.getLong(1));
+                                }
+                            }
+                        } else {
+                            totalAttachmentSize.set(value);
+                        }
                     }
                 }
                 try (ResultSet rs = statement.executeQuery(PAGE_SQL)) {
@@ -302,7 +316,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
                     log.error("Cannot rollback hibernate transaction", ex);
                 }
             }
-            log.error("Error get attachment size from SQL", th);
+            log.error("Error execute SQL", th);
         } finally {
             if (transaction != null) {
                 try {
