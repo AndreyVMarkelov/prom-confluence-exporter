@@ -10,4 +10,4 @@ On Atlassian Marketplace [Prometheus Exporter For Confluence](https://marketplac
 
 * [Example grafana dashborad](./grafana/README.md)
 
-![image](./grafana/img/grafana-confluence-dashboard.png)
+![image](./grafana/img/confluence-board.png)

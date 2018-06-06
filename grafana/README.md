@@ -7,4 +7,4 @@
 * GC
 * Request Duration
 
-![image](img/grafana-confluence-dashboard.png)
+![image](img/confluence-board.png)
