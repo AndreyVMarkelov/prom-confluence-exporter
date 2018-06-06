@@ -6,8 +6,8 @@ For more information the documentation [Prometheus Exporter For Confluence](http
 
 On Atlassian Marketplace [Prometheus Exporter For Confluence](https://marketplace.atlassian.com/plugins/ru.andreymarkelov.atlas.plugins.prom-confluence-exporter/server/overview)
 
-## Grafana examples 
+## Grafana 
 
-* [Example grafana dashborad](./grafana/README.md)
+* [Example Grafana Dashborad](https://grafana.com/dashboards/6404)
 
 ![image](./grafana/img/confluence-board.png)
