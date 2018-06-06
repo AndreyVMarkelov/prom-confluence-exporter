@@ -1,6 +1,7 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -187,6 +188,13 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .help("Current Mail Queue Errors Gauge")
             .create();
 
+    //--> JMX
+
+    private final Gauge jvmUptimeGauge = Gauge.build()
+            .name("jvm_uptime_gauge")
+            .help("JVM Uptime Gauge")
+            .create();
+
     @Override
     public void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException {
         Histogram.Timer pathTimer = isNotBlank(path) ? requestDurationOnPath.labels(path).startTimer() : null;
@@ -286,6 +294,9 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         totalMailQueueGauge.set(mailQueue.size());
         totalMailQueueErrorsGauge.set(mailQueue.getErrorQueue().size());
 
+        // jvm uptime
+        jvmUptimeGauge.set(ManagementFactory.getRuntimeMXBean().getUptime());
+
         List<MetricFamilySamples> result = new ArrayList<>();
         result.addAll(clusterPanicCounter.collect());
         result.addAll(labelCreateCounter.collect());
@@ -309,6 +320,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(totalBlogPostsGauge.collect());
         result.addAll(totalMailQueueGauge.collect());
         result.addAll(totalMailQueueErrorsGauge.collect());
+        result.addAll(jvmUptimeGauge.collect());
         return result;
     }
 

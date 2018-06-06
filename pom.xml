@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.andreymarkelov.atlas.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.12</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Prometheus Exporter For Confluence</name>
