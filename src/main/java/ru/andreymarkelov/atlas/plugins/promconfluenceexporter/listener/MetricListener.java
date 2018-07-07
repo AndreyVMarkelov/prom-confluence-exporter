@@ -7,6 +7,7 @@ import com.atlassian.confluence.event.events.label.LabelCreateEvent;
 import com.atlassian.confluence.event.events.label.LabelDeleteEvent;
 import com.atlassian.confluence.event.events.label.LabelRemoveEvent;
 import com.atlassian.confluence.event.events.security.LoginEvent;
+import com.atlassian.confluence.event.events.security.LoginFailedEvent;
 import com.atlassian.confluence.event.events.security.LogoutEvent;
 import com.atlassian.confluence.event.events.space.SpaceCreateEvent;
 import com.atlassian.confluence.event.events.space.SpaceRemoveEvent;
@@ -140,5 +141,18 @@ public class MetricListener implements InitializingBean, DisposableBean {
             ip = "";
         }
         metricCollector.userLogoutCounter(username, ip);
+    }
+
+    @EventListener
+    public void onLoginFailedEvent(LoginFailedEvent loginFailedEvent) {
+        String username = loginFailedEvent.getUsername();
+        if (username == null) {
+            username = "";
+        }
+        String ip = loginFailedEvent.getRemoteIP();
+        if (ip == null) {
+            ip = "";
+        }
+        metricCollector.userLoginFailedCounter(username, ip);
     }
 }

@@ -1,5 +1,7 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
+import java.util.List;
+
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
@@ -23,6 +25,16 @@ public class ScrapingSettingsManagerImpl implements ScrapingSettingsManager {
     @Override
     public void setDelay(int delay) {
         getPluginSettings().put("delay", String.valueOf(delay));
+    }
+
+    @Override
+    public List<String> getDurationPaths() {
+        return null;
+    }
+
+    @Override
+    public void setDurationPaths(List<String> durationPaths) {
+
     }
 
     private synchronized PluginSettings getPluginSettings() {

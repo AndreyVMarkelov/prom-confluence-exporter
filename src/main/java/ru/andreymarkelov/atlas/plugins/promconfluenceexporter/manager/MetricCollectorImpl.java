@@ -162,6 +162,12 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .labelNames("username", "ip")
             .create();
 
+    private final Counter userLoginFailedCounter = Counter.build()
+            .name("confluence_user_failed_login_count")
+            .help("User Failed Login Count")
+            .labelNames("username", "ip")
+            .create();
+
     //--> Space
 
     private final Counter spaceCreateCounter = Counter.build()
@@ -246,6 +252,11 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         userLogoutCounter.labels(username, ip).inc();
     }
 
+    @Override
+    public void userLoginFailedCounter(String username, String ip) {
+        userLoginFailedCounter.labels(username, ip).inc();
+    }
+
     //--> Space
 
 
@@ -305,6 +316,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(labelDeleteCounter.collect());
         result.addAll(userLoginCounter.collect());
         result.addAll(userLogoutCounter.collect());
+        result.addAll(userLoginFailedCounter.collect());
         result.addAll(requestDurationOnPath.collect());
         result.addAll(totalClusterNodeGauge.collect());
         result.addAll(maintenanceExpiryDaysGauge.collect());
