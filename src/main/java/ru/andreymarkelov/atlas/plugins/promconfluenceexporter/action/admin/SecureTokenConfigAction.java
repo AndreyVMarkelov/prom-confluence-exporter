@@ -1,13 +1,15 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.action.admin;
 
+import java.util.Date;
+
 import com.atlassian.confluence.core.ConfluenceActionSupport;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScheduledMetricEvaluator;
+import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScrapingSettingsManager;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManager;
-
-import java.util.Date;
 
 public class SecureTokenConfigAction extends ConfluenceActionSupport {
     private SecureTokenManager secureTokenManager;
+    private ScrapingSettingsManager scrapingSettingsManager;
     private ScheduledMetricEvaluator scheduledMetricEvaluator;
 
     private final static String ERROR_INVALID_DELAY = "ru.andreymarkelov.atlas.plugins.promconfluenceexporter.admin.error.invalid.delay";
@@ -21,23 +23,17 @@ public class SecureTokenConfigAction extends ConfluenceActionSupport {
 
     @Override
     public String doDefault() {
-        token = secureTokenManager.getToken();
-        delay = scheduledMetricEvaluator.getDelay();
+        this.token = secureTokenManager.getToken();
+        this.delay = scrapingSettingsManager.getDelay();
         long temp = scheduledMetricEvaluator.getLastExecutionTimestamp();
-
-        if (temp > 0) {
-            lastExecutionTimestamp = new Date(temp).toString();
-        } else {
-            lastExecutionTimestamp = getI18n().getText(NOT_YET_EXECUTED);
-        }
-
+        this.lastExecutionTimestamp = (temp > 0) ? new Date(temp).toString() : getText(NOT_YET_EXECUTED);
         return INPUT;
     }
 
     @Override
     public void validate() {
         if (delay <= 0) {
-            addFieldError("delay", getI18n().getText(ERROR_INVALID_DELAY));
+            addFieldError("delay", getText(ERROR_INVALID_DELAY));
         }
     }
 
@@ -47,7 +43,7 @@ public class SecureTokenConfigAction extends ConfluenceActionSupport {
             return ERROR;
         }
         secureTokenManager.setToken(token);
-        scheduledMetricEvaluator.setDelay(delay);
+        scrapingSettingsManager.setDelay(delay);
         scheduledMetricEvaluator.restartScraping(delay);
         setSaved(true);
 
@@ -68,6 +64,10 @@ public class SecureTokenConfigAction extends ConfluenceActionSupport {
 
     public void setScheduledMetricEvaluator(ScheduledMetricEvaluator scheduledMetricEvaluator){
         this.scheduledMetricEvaluator = scheduledMetricEvaluator;
+    }
+
+    public void setScrapingSettingsManager(ScrapingSettingsManager scrapingSettingsManager) {
+        this.scrapingSettingsManager = scrapingSettingsManager;
     }
 
     public boolean isSaved() {

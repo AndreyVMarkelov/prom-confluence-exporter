@@ -12,6 +12,4 @@ public interface ScheduledMetricEvaluator {
     int getTotalPersonalSpaces();
     long getLastExecutionTimestamp();
     void restartScraping(int newDelay);
-    int getDelay();
-    void setDelay(int delay);
 }

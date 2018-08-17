@@ -69,6 +69,9 @@
     <component name="Security Token Data Manager" key="prom-for-confluence-exporter-data-manager" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManagerImpl">
         <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.SecureTokenManager</interface>
     </component>
+    <component name="Metrics Scraping Settings Manager" key="prom-for-confluence-scraping-settings-manager" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScrapingSettingsManagerImpl">
+        <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScrapingSettingsManager</interface>
+    </component>
     <component name="Metrics Event Listener" key="prom-for-confluence-exporter-listener" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.listener.MetricListener">
         <description>This service listens Confluence events.</description>
     </component>

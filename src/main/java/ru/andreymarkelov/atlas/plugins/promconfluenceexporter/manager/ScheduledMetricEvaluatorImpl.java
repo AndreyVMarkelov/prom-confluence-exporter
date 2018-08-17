@@ -20,8 +20,6 @@ import com.atlassian.confluence.status.service.SystemInformationService;
 import com.atlassian.confluence.status.service.systeminfo.UsageInfo;
 import com.atlassian.confluence.user.UserAccessor;
 import com.atlassian.confluence.util.UserChecker;
-import com.atlassian.sal.api.pluginsettings.PluginSettings;
-import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.user.User;
 import net.sf.hibernate.HibernateException;
 import net.sf.hibernate.Session;
@@ -45,7 +43,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE CONTENTTYPE = 'PAGE' AND PREVVER IS NULL AND CONTENT_STATUS = 'current'";
     private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE CONTENTTYPE = 'BLOGPOST' AND PREVVER IS NULL AND CONTENT_STATUS = 'current'";
 
-    private final PluginSettings pluginSettings;
+    private final ScrapingSettingsManager scrapingSettingsManager;
     private final SessionFactory sessionFactory;
     private final LoginManager loginManager;
     private final UserAccessor userAccessor;
@@ -73,13 +71,13 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private ScheduledFuture<?> scraper;
 
     public ScheduledMetricEvaluatorImpl(
-            PluginSettingsFactory pluginSettingsFactory,
+            ScrapingSettingsManager scrapingSettingsManager,
             SessionFactory sessionFactory,
             LoginManager loginManager,
             UserAccessor userAccessor,
             UserChecker userChecker,
             SystemInformationService systemInformationService) {
-        this.pluginSettings = pluginSettingsFactory.createSettingsForKey("PLUGIN_PROMETHEUS_FOR_CONFLUENCE");
+        this.scrapingSettingsManager = scrapingSettingsManager;
         this.sessionFactory = sessionFactory;
         this.loginManager = loginManager;
         this.userAccessor = userAccessor;
@@ -178,21 +176,10 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     public void afterPropertiesSet() {
         lock.lock();
         try {
-            startScraping(getDelay());
+            startScraping(scrapingSettingsManager.getDelay());
         } finally{
             lock.unlock();
         }
-    }
-
-    @Override
-    public int getDelay() {
-        String storedValue = (String) pluginSettings.get("delay");
-        return storedValue != null ? Integer.parseInt(storedValue) : 1;
-    }
-
-    @Override
-    public void setDelay(final int delay) {
-        pluginSettings.put("delay", String.valueOf(delay));
     }
 
     @Override
@@ -207,7 +194,11 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
         }
     }
 
-    private void startScraping(int delay){
+    private void startScraping(int delay) {
+        if (delay <= 0) {
+            return;
+        }
+
         scraper = executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
