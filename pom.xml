@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.andreymarkelov.atlas.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Prometheus Exporter For Confluence</name>
@@ -85,7 +85,7 @@
     <properties>
         <confluence.version>5.8.6</confluence.version>
         <confluence.data.version>${confluence.version}</confluence.data.version>
-        <amps.version>6.3.15</amps.version>
+        <amps.version>6.3.21</amps.version>
         <prometheus.version>0.5.0</prometheus.version>
         <useFastdevCli>false</useFastdevCli>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
