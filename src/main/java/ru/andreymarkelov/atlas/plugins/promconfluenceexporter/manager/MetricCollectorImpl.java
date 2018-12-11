@@ -214,15 +214,15 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .labelNames("pluginKey")
             .create();
 
-    private final Counter pluginInstalledEvent = Counter.build()
-            .name("confluence_plugin_installed_count")
-            .help("Plugin Installed Count")
+    private final Counter pluginInstallEvent = Counter.build()
+            .name("confluence_plugin_install_count")
+            .help("Plugin Install Count")
             .labelNames("pluginKey")
             .create();
 
-    private final Counter pluginUninstalledEvent = Counter.build()
-            .name("confluence_plugin_uninstalled_count")
-            .help("Plugin Uninstalled Count")
+    private final Counter pluginUninstallEvent = Counter.build()
+            .name("confluence_plugin_uninstall_count")
+            .help("Plugin Uninstall Count")
             .labelNames("pluginKey")
             .create();
 
@@ -308,13 +308,13 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     }
 
     @Override
-    public void pluginInstalledEvent(String pluginKey) {
-        pluginInstalledEvent.labels(pluginKey).inc();
+    public void pluginInstallEvent(String pluginKey) {
+        pluginInstallEvent.labels(pluginKey).inc();
     }
 
     @Override
-    public void pluginUninstalledEvent(String pluginKey) {
-        pluginUninstalledEvent.labels(pluginKey).inc();
+    public void pluginUninstallEvent(String pluginKey) {
+        pluginUninstallEvent.labels(pluginKey).inc();
     }
 
     //--> Collect
@@ -382,8 +382,8 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(jvmUptimeGauge.collect());
         result.addAll(pluginEnabledEvent.collect());
         result.addAll(pluginDisabledEvent.collect());
-        result.addAll(pluginInstalledEvent.collect());
-        result.addAll(pluginUninstalledEvent.collect());
+        result.addAll(pluginInstallEvent.collect());
+        result.addAll(pluginUninstallEvent.collect());
         return result;
     }
 

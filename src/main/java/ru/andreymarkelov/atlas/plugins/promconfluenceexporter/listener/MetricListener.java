@@ -6,6 +6,8 @@ import com.atlassian.confluence.event.events.label.LabelAddEvent;
 import com.atlassian.confluence.event.events.label.LabelCreateEvent;
 import com.atlassian.confluence.event.events.label.LabelDeleteEvent;
 import com.atlassian.confluence.event.events.label.LabelRemoveEvent;
+import com.atlassian.confluence.event.events.plugin.PluginInstallEvent;
+import com.atlassian.confluence.event.events.plugin.PluginUninstallEvent;
 import com.atlassian.confluence.event.events.security.LoginEvent;
 import com.atlassian.confluence.event.events.security.LoginFailedEvent;
 import com.atlassian.confluence.event.events.security.LogoutEvent;
@@ -20,8 +22,6 @@ import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.plugin.event.events.PluginDisabledEvent;
 import com.atlassian.plugin.event.events.PluginEnabledEvent;
-import com.atlassian.plugin.event.events.PluginInstalledEvent;
-import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector;
@@ -173,12 +173,12 @@ public class MetricListener implements InitializingBean, DisposableBean {
     }
 
     @EventListener
-    public void onPluginInstalledEvent(PluginInstalledEvent pluginInstalledEvent) {
-        metricCollector.pluginInstalledEvent(pluginInstalledEvent.getPlugin().getKey());
+    public void onPluginInstalledEvent(PluginInstallEvent pluginInstallEvent) {
+        metricCollector.pluginInstallEvent(pluginInstallEvent.getPluginKey());
     }
 
     @EventListener
-    public void onPluginUninstalledEvent(PluginUninstalledEvent pluginUninstalledEvent) {
-        metricCollector.pluginUninstalledEvent(pluginUninstalledEvent.getPlugin().getKey());
+    public void onPluginUninstalledEvent(PluginUninstallEvent pluginUninstallEvent) {
+        metricCollector.pluginUninstallEvent(pluginUninstallEvent.getPluginKey());
     }
 }

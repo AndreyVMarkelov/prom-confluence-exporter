@@ -20,7 +20,7 @@ public interface MetricCollector {
     void spaceDeleteCounter(String username);
     void pluginEnabledEvent(String pluginKey);
     void pluginDisabledEvent(String pluginKey);
-    void pluginInstalledEvent(String pluginKey);
-    void pluginUninstalledEvent(String pluginKey);
+    void pluginInstallEvent(String pluginKey);
+    void pluginUninstallEvent(String pluginKey);
     void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException;
 }
