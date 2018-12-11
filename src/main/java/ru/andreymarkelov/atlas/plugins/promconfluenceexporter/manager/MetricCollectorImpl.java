@@ -1,11 +1,5 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.List;
-import javax.servlet.ServletException;
-
 import com.atlassian.confluence.cluster.ClusterManager;
 import com.atlassian.confluence.license.LicenseService;
 import com.atlassian.confluence.license.exception.LicenseException;
@@ -24,8 +18,13 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.util.ExceptionRunnable;
 
-import static java.util.Collections.emptyList;
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class MetricCollectorImpl extends Collector implements MetricCollector, DisposableBean, InitializingBean {
@@ -201,6 +200,32 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .help("JVM Uptime Gauge")
             .create();
 
+    //--> Plugins
+
+    private final Counter pluginEnabledEvent = Counter.build()
+            .name("confluence_plugin_enabled_count")
+            .help("Plugin Enabled Count")
+            .labelNames("pluginKey")
+            .create();
+
+    private final Counter pluginDisabledEvent = Counter.build()
+            .name("confluence_plugin_disabled_count")
+            .help("Plugin Disabled Count")
+            .labelNames("pluginKey")
+            .create();
+
+    private final Counter pluginInstalledEvent = Counter.build()
+            .name("confluence_plugin_installed_count")
+            .help("Plugin Installed Count")
+            .labelNames("pluginKey")
+            .create();
+
+    private final Counter pluginUninstalledEvent = Counter.build()
+            .name("confluence_plugin_uninstalled_count")
+            .help("Plugin Uninstalled Count")
+            .labelNames("pluginKey")
+            .create();
+
     @Override
     public void requestDuration(String path, ExceptionRunnable runnable) throws IOException, ServletException {
         Histogram.Timer pathTimer = isNotBlank(path) ? requestDurationOnPath.labels(path).startTimer() : null;
@@ -270,6 +295,28 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         spaceDeleteCounter.labels(username).inc();
     }
 
+    //--> Plugins
+
+    @Override
+    public void pluginEnabledEvent(String pluginKey) {
+        pluginEnabledEvent.labels(pluginKey).inc();
+    }
+
+    @Override
+    public void pluginDisabledEvent(String pluginKey) {
+        pluginDisabledEvent.labels(pluginKey).inc();
+    }
+
+    @Override
+    public void pluginInstalledEvent(String pluginKey) {
+        pluginInstalledEvent.labels(pluginKey).inc();
+    }
+
+    @Override
+    public void pluginUninstalledEvent(String pluginKey) {
+        pluginUninstalledEvent.labels(pluginKey).inc();
+    }
+
     //--> Collect
 
     private List<MetricFamilySamples> collectInternal() {
@@ -333,6 +380,10 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(totalMailQueueGauge.collect());
         result.addAll(totalMailQueueErrorsGauge.collect());
         result.addAll(jvmUptimeGauge.collect());
+        result.addAll(pluginEnabledEvent.collect());
+        result.addAll(pluginDisabledEvent.collect());
+        result.addAll(pluginInstalledEvent.collect());
+        result.addAll(pluginUninstalledEvent.collect());
         return result;
     }
 

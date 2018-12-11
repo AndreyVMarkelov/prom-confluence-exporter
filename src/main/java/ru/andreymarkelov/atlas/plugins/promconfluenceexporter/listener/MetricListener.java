@@ -18,6 +18,10 @@ import com.atlassian.confluence.pages.Page;
 import com.atlassian.confluence.user.AuthenticatedUserThreadLocal;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.plugin.event.events.PluginDisabledEvent;
+import com.atlassian.plugin.event.events.PluginEnabledEvent;
+import com.atlassian.plugin.event.events.PluginInstalledEvent;
+import com.atlassian.plugin.event.events.PluginUninstalledEvent;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.MetricCollector;
@@ -154,5 +158,27 @@ public class MetricListener implements InitializingBean, DisposableBean {
             ip = "";
         }
         metricCollector.userLoginFailedCounter(username, ip);
+    }
+
+    // plugins
+
+    @EventListener
+    public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent) {
+        metricCollector.pluginEnabledEvent(pluginEnabledEvent.getPlugin().getKey());
+    }
+
+    @EventListener
+    public void onPluginEnabledEventPluginDisabledEvent(PluginDisabledEvent pluginDisabledEvent) {
+        metricCollector.pluginDisabledEvent(pluginDisabledEvent.getPlugin().getKey());
+    }
+
+    @EventListener
+    public void onPluginInstalledEvent(PluginInstalledEvent pluginInstalledEvent) {
+        metricCollector.pluginInstalledEvent(pluginInstalledEvent.getPlugin().getKey());
+    }
+
+    @EventListener
+    public void onPluginUninstalledEvent(PluginUninstalledEvent pluginUninstalledEvent) {
+        metricCollector.pluginUninstalledEvent(pluginUninstalledEvent.getPlugin().getKey());
     }
 }
