@@ -1,9 +1,0 @@
-## Dashboard navigation
-##
-<content tag="content-navigation">
-    <div id="navigation" class="content-navigation">
-        <ul class="ajs-menu-bar">
-            #menuMacros_renderButton("system.dashboard.button")
-        </ul>
-    </div>
-</content>

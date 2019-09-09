@@ -1,7 +1,0 @@
-## VM's required to support the various page operations.
-## These VMs are included immediately at the start of the content div in page.vmd.
-
-#parse ("/template/includes/actionerrors.vm")
-#parse("/decorators/includes/link-to-this-page.vm")
-#parse ("/template/includes/page-move-templates.vm")
-#parse ("/template/includes/search-results-grid-templates.vm")

@@ -1,8 +1,0 @@
-<div class="alertPanel">
-    <img src="$staticResourceUrlPrefix/images/icons/emoticons/warning.png" align="absmiddle" width="16" height="16">
-    #if ($title && $title.length() > 0)
-        <strong>$title:</strong>
-    #end
-
-    $body
-</div>

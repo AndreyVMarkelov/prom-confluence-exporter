@@ -1,5 +1,0 @@
-## VM's required to support the various global operations.
-## These VMs are included immediately at the start of the body in main.vmd.
-
-#parse ("/template/includes/global-settings.vm")
-#webPanelForLocation("atl.general" $action.context)

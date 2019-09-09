@@ -1,2 +1,0 @@
-## Page footer for main and admin decorators.
-#parse("/decorators/includes/footer-content.vm")
