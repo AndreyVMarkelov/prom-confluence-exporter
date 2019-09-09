@@ -1,0 +1,82 @@
+#set ($helper = $params.get("helper"))
+
+#*
+If the action passes selectedSpaceToolsWebItem as a parameter, we use this one.
+If the action doesn't, we take the cookie.
+For each tab, we use the first web-item of the section as a link.
+*#
+
+#if ($space && $action.getThemeManager().getSpaceTheme($space.key).hasSpaceSideBar())
+    #set ($selectedSpaceToolsWebItem = $params.get("selectedSpaceToolsWebItem"))
+    #if (!$selectedSpaceToolsWebItem || $stringUtils.isBlank($selectedSpaceToolsWebItem))
+        #set ($lastWebItemClicked = $helper.lastWebItemClicked)
+        #set ($lastWebSectionClicked = $helper.lastWebSectionClicked)
+        #set ($selectedSpaceToolsWebItem = $lastWebItemClicked)
+    #end
+    #set ($spaceToolsTabs = $spaceToolsTabsHelper.getNavigation($action, $selectedSpaceToolsWebItem))
+    #set ($canAdministerSpace = $permissionHelper.canAdminister($action.authenticatedUser, $action.space))
+
+    <nav class="aui-navgroup aui-navgroup-horizontal spacetools-nav">
+        <div class="aui-navgroup-inner">
+            <div class="aui-navgroup-primary">
+                <ul class="aui-nav">
+                    #foreach ($tab in $spaceToolsTabs.getFirstLevelNavigation())
+                        #if ($tab.selected)
+                            #set ($selectedClass = "aui-nav-selected")
+                            #set ($selectedSectionKey = "$tab.sectionFullKey")
+                        #else
+                            #set ($selectedClass = "")
+                        #end
+                        <li class="$selectedClass section-menuheading-$tab.sectionKey"
+                            data-first-web-item-key="$tab.webItemKey"
+                            data-web-section-key="$tab.sectionFullKey">
+                            <a href="$tab.link">
+                                $tab.label
+                            </a>
+                        </li>
+                    #end
+                </ul>
+            </div>
+        </div><!-- .aui-navgroup-inner -->
+    </nav>
+
+    #set($secondLevelNavigation = $spaceToolsTabs.getSecondLevelNavigation())
+    #if ($secondLevelNavigation && $secondLevelNavigation.size() > 0)
+        <div>## Need an empty div here to prevent AUI page layout styles from being applied, they are of the form #content > .aui-tabs ...
+             ## the extra div stops the direct descendant selector from matching and prevents the unwanted page layout style from being applied
+        <div id="space-tools-tabs" class="aui-tabs aui-tabs-disabled horizontal-tabs spacetools-nav-secondary" data-aui-responsive>
+            <ul class="tabs-menu">
+                #foreach ($tab in $secondLevelNavigation)
+                    #if ($tab.selected)
+                        #set ($selectedClass = "active-tab")
+                    #else
+                        #set ($selectedClass = "")
+                    #end
+
+                    <li class="menu-item $selectedClass" data-web-item-key="$tab.webItemKey" data-web-section-key="$selectedSectionKey">
+                        <a #if ($tab.item.link.id) id="$tab.item.link.id"#end href="$tab.link" title="$tab.label">$tab.label</a>
+                    </li>
+                #end
+            </ul>
+            ## An empty pane needed because it contains the CSS styles for the bottom border of the tabs
+            ## without it, the tabs have no horizontal line underneath them
+            <div class="tabs-pane active-pane"></div>
+        </div>
+        </div>
+    #else
+        <br/>
+        <br/>
+    #end
+#end
+
+
+## If it's not using the Space IA, dont display the tabs, but still show the contents
+<div id="space-tools-body">
+    $body
+</div>
+
+#if ($space)
+<content tag="spacename">$webwork.htmlEncode($space.name)</content>
+<content tag="spacekey">$space.key</content>
+<content tag="spaceadminaction">true</content>
+#end

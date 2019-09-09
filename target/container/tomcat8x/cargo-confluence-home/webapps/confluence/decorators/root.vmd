@@ -1,0 +1,22 @@
+## Include master styles for all themes 
+#requireResource("confluence.web.resources:master-styles")
+
+## Root decorator: this is a layer of abstraction that Confluence doesn't need. It will be removed eventually.
+
+#set ($context = $params.get("context"))
+
+#macro (applyInlineDecorator $decorator $body $params)
+    #httpStatsElapse("${decorator}DecoratorStart")
+    #applyDecorator($decorator)
+        #decoratorParam("params" $params)
+        $body
+    #end
+    #httpStatsElapse("${decorator}DecoratorFinished")
+#end
+
+#if ($context.startsWith("space-"))             ## Space tabs (Friday afternoon hack)
+    #applyInlineDecorator("space" $body $params)
+#else
+    #applyInlineDecorator($context $body $params )
+
+#end

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    #if ($sitemeshPage.getProperty("page.spacename"))
+        <title>$title - $sitemeshPage.getProperty("page.spacename") - #siteTitle()</title>
+    #else
+        <title>$title - #siteTitle()</title>
+    #end
+
+    #requireResource("confluence.web.resources:print-styles")
+
+    #requireResourcesForContext("main")
+    #requireResourcesForContext("atl.general")
+    #requireResourcesForContext("login")
+
+    #parse("/decorators/includes/header.vm")
+    $!settingsManager.globalSettings.customHtmlSettings.beforeHeadEnd
+
+    $!sitemeshPage.getProperty("page.canonical")
+
+</head>
+<body id="com-atlassian-confluence" class="$!theme.bodyClass $!sitemeshPage.getProperty("page.bodyClass") aui-layout aui-theme-default">
+    #parse ("/decorators/includes/main-content-includes.vm")
+<div id="page">
+    <div id="full-height-container">
+        <div id="main" class="$!personalClass aui-page-panel">
+            $body
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

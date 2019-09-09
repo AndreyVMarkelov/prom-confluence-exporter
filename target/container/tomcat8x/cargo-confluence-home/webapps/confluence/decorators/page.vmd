@@ -1,0 +1,176 @@
+## PAGE SPECIFIC DECORATOR
+## Here the context is the page. Modes are 'view', 'edit', 'edit-preview', 'view-information', and 'view-attachments'.
+
+#set ($helper = $params.get("helper"))
+#set ($mode = $params.get("mode"))
+#set ($context = $params.get("context"))
+#set ($confPage = $helper.page)
+
+#if (!$mode.contains("edit"))
+    ## CONFDEV-35759 To avoid resource URLs changing depending on whether the pagetree is enabled, always require
+    ## this context.
+    #requireResourcesForContext("atl.confluence.plugins.pagetree-desktop")
+#end
+
+#infoPanelInitFromParams()
+## GENERAL PAGE DECORATING BEGINS
+
+#requireResourcesForContext("page")
+
+#if ($mode == "view")
+    <content tag="page-metadata-banner">
+        #skiplink("page-banner", $i18n.getText("assistive.skiplink.to.banner.start"), $i18n.getText("assistive.skiplink.to.banner.end"))
+            #webPanelForLocation("atl.page.metadata.banner", {"action": $action})
+        #end
+    </content>
+#end
+
+#httpStatsElapse('pageDecoratorContentNavigationStart')
+#if ($mode != "edit" && $mode != "edit-preview")
+    #if($darkFeatures.isDarkFeatureEnabled('confluence.pagenav.deferred') && $mode == "view")
+        #putMetadata('page-id', $page.id)
+        $decoratorUtil.setContentNavContext($action.page, $mode, $context, $helper)
+    #else
+        #parse ("/decorators/includes/content-navigation.vm")
+    #end
+#end
+#httpStatsElapse('pageDecoratorContentNavigationFinished')
+
+#httpStatsElapse('pageDecoratorInfoPanelStart')
+#if ($infoPanelRequired)
+<content tag="sidebar">
+    #infoPanel(true true true true)
+</content>
+#end
+#httpStatsElapse('pageDecoratorInfoPanelFinished')
+
+#httpStatsElapse('pageDecoratorSidebarStart')
+#if( ($mode != "edit" && $mode != "edit-preview" ))
+    #if($darkFeatures.isDarkFeatureEnabled('confluence.sidebar.deferred'))
+        #set ($collectorKey  = $params.get("collector-key"))
+        $decoratorUtil.setSidebarContext(null, $confPage, $confPage.idAsString, $context, $context, $collectorKey)
+    #else
+        <content tag="ia-sidebar">
+            #foreach ($webPanel in $webInterfaceManager.getDisplayableWebPanels("atl.page.left.sidebar", {"page": $confPage, "context": $context}))
+                $!webPanel.getHtml($action.context)
+            #end
+        </content>
+    #end
+#end
+#httpStatsElapse('pageDecoratorSidebarFinished')
+
+#set($customHeader = $helper.getCustomHeader($spaceKey))
+#if ($mode == "view" && $customHeader != "")
+    <content tag="custom-content-header">
+        <div id="custom-content-header">
+            $customHeader
+        </div>
+    </content>
+#end
+
+#set($customFooter = $helper.getCustomFooter($spaceKey))
+#if ($mode == "view" && $customFooter != "")
+    <content tag="custom-content-footer">
+        <div id="custom-content-footer">
+            $customFooter
+        </div>
+    </content>
+#end
+
+#httpStatsElapse('pageDecoratorContentStart')
+<div id="content" class="page $!mode">
+    #parse("/decorators/includes/page-content-includes.vm")
+
+    ## MODE SPECIFIC DECORATING BEGINS
+    #*
+        Display page based on mode: currently 'view', 'edit', 'preview-edit', 'info' and 'attachments.
+        See the individual page templates (viewpage.vm, editpage.vm, etc.) for the setting of the mode parameter.
+    *#
+    ## VIEW
+
+    #if ($mode == "view")
+        <content tag="headsection">
+            #webPanelForLocation("atl.confluence.viewpage.header" $action.context)
+        </content>
+
+        #if ($space.personal)
+            #if ($permissionHelper.canView($action.authenticatedUser, $space.creator))
+                ## Deprecated: needed in case main.vmd hasn't been updated
+                <content tag="show-personal-sidebar">true</content>
+            #end
+        #end
+
+        #requireResourcesForContext("viewcontent")
+
+        #set ($labelable = $page)
+        #permitSearchEngines()
+
+        #if ($helper.isHistoricalVersion())
+            <content tag="suppressPdfLink">true</content>
+        #end
+
+        #parse ("/decorators/includes/page-metadata.vm")
+
+        #if ($helper.isHistoricalVersion() || $helper.action.navigatingVersions)
+            #versionInfo()
+        #end
+
+        ## If you choose to move page it's being done from view mode
+        #putMetadata('browse-page-tree-mode', 'view')
+        #putMetadata('parent-page-id', $!parentPage.id)
+        #putMetadata('shared-drafts', $action.collaborativeEditingHelper.isSharedDraftsFeatureEnabled($spaceKey))
+
+        <div id="main-content" class="wiki-content">
+           $body
+        </div>
+
+        #trackbackRdf ($trackbackUtils.getContentIdentifier($page) $page.title $trackbackUtils.getPingUrl($page))
+
+        #if ($mode != "edit" && $mode != "edit-preview")
+            #set($labelable = $page)
+            #parse("/com/atlassian/confluence/plugins/labels/components/labels-editor.vm")
+        #end
+
+		#if (!$action.childrenNotShown)
+        #renderChildren()
+		#end
+
+        #applyDecorator("root")
+            #decoratorParam("sitemeshPage" $sitemeshPage)
+            #decoratorParam("page" $page)
+            #decoratorParam("context" $comments)
+        #end
+
+        #webPanelForLocation("atl.page.content.footer", {"action": $action})
+
+    ## EDIT || PREVIEW-EDIT
+    #elseif ($mode == "edit" || $mode == "edit-preview")
+        $body
+
+    ## INFO
+    #elseif ($mode == "view-information")
+        #requireResourcesForContext("viewinformation")
+        $body
+
+    ## ATTACHMENTS
+    #elseif ($mode == "view-attachments" || $mode == "move-attachments" || $mode == "view-attachment")
+        #requireResourcesForContext("viewattachments")
+        $body
+
+    ## FOR CUSTOM WEB-ITEMS
+    #else
+        $body
+
+    #end
+    ## MODE SPECIFIC DECORATING ENDS
+
+</div>
+
+## GENERAL PAGE DECORATING ENDS
+#httpStatsElapse('pageDecoratorContentFinished')
+
+#parse ("/pages/page-breadcrumbs.vm")
+#if ($mode != "edit" && $mode != "edit-preview")
+    #parse("/template/includes/space-tools-web-items.vm")
+#end
+#menuMacros_renderBrowseMenu()

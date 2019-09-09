@@ -1,0 +1,133 @@
+#*
+  NEWS SPECIFIC DECORATOR
+Here the context is a blogpost item (news).
+Modes are 'view', 'edit', 'edit-preview', and 'remove'.
+*#
+
+#set ($helper = $params.get("helper"))
+#set ($mode = $params.get("mode"))
+#set ($context = $params.get("context"))
+#set ($blog = $helper.page)
+#set ($infoPanelWidth = $params.get("infopanel-width"))
+
+#infoPanelInitFromParams()
+## GENERAL PAGE DECORATING BEGINS
+
+#requireResourcesForContext("blogpost")
+
+#if ($mode == "view")
+    <content tag="page-metadata-banner">
+        #skiplink("page-banner", $i18n.getText("assistive.skiplink.to.banner.start"), $i18n.getText("assistive.skiplink.to.banner.end"))
+            #webPanelForLocation("atl.page.metadata.banner", {"action": $action})
+        #end
+    </content>
+#end
+
+#if ($mode != "edit" && $mode != "edit-preview")
+    #if($darkFeatures.isDarkFeatureEnabled('confluence.pagenav.deferred') && $mode == "view")
+        #putMetadata('page-id', $page.id)
+        $decoratorUtil.setContentNavContext($action.page, $mode, $context, $helper)
+    #else
+        #parse ("/decorators/includes/content-navigation.vm")
+    #end
+#end
+
+#if ($infoPanelRequired)
+<content tag="sidebar">
+    #infoPanel(true true true true)
+</content>
+#end
+
+#if( ($mode != "edit" && $mode != "edit-preview" ))
+    #if($darkFeatures.isDarkFeatureEnabled('confluence.sidebar.deferred'))
+        #set ($collectorKey  = $params.get("collector-key"))
+        $decoratorUtil.setSidebarContext($action.space, $confPage, $action.page.idAsString, $context, $context, $collectorKey)
+    #else
+        <content tag="ia-sidebar">
+            #foreach ($webPanel in $webInterfaceManager.getDisplayableWebPanels("atl.page.left.sidebar", {"page": $confPage, "context": $context}))
+                $!webPanel.getHtml($action.context)
+            #end
+        </content>
+    #end
+#end
+
+<div id="content" class="blogpost $!mode">
+    #parse("/decorators/includes/page-content-includes.vm")
+
+    ## MODE SPECIFIC DECORATING BEGINS
+        #*
+            Display page based on mode: currently 'view', 'edit', 'preview-edit', 'info' and 'attachments.
+            See the individual page templates (viewpage.vm, editpage.vm, etc.) for the setting of the mode parameter.
+        *#
+        ## VIEW
+        #if ($mode == "view")
+            #webPanelForLocation("atl.confluence.viewblogpost.header" $action.context)
+            #if ($space.personal)
+                #if ($permissionHelper.canView($action.authenticatedUser, $space.creator))
+                    ## Deprecated: needed in case main.vmd hasn't been updated
+                    <content tag="show-personal-sidebar">true</content>
+                #end
+            #end
+
+            #requireResourcesForContext("viewcontent")
+            #permitSearchEngines()
+
+            #parse ("/decorators/includes/page-metadata.vm")
+
+            #if ($helper.isHistoricalVersion())
+                    #versionInfo()
+            #end
+
+            #putMetadata('shared-drafts', $action.collaborativeEditingHelper.isSharedDraftsFeatureEnabled($spaceKey))
+
+            <div id="main-content" class="wiki-content">
+                $body
+            </div>
+            #set($labelable = $blog)
+            #parse ("/com/atlassian/confluence/plugins/labels/components/labels-editor.vm")
+
+            #applyDecorator("root")
+                #decoratorParam("sitemeshPage" $sitemeshPage)
+                #decoratorParam("page" $blog)
+                #decoratorParam("context" "comments")
+            #end
+
+            #webPanelForLocation("atl.page.content.footer", {"action": $action})
+
+            #trackbackRdf ($trackbackUtils.getContentIdentifier($page) $page.title $trackbackUtils.getPingUrl($page))
+            <content tag="surtitle">
+                <div class="blogSurtitle">
+                    <img src="$staticResourceUrlPrefix/images/icons/contenttypes/blog_post_16.png" height="16" width="16" border="0" align="absmiddle">&nbsp;
+                    <span class="blogDate">$helper.action.getDateString($blog.creationDate)</span> at $helper.action.dateFormatter.formatTime($blog.creationDate) by #userLink($blog.creator)
+                </div>
+            </content>
+
+        ## EDIT || PREVIEW-EDIT
+    #elseif ($mode == "edit" || $mode == "edit-preview")
+        $body
+
+    ## INFO
+    #elseif ($mode == "view-information")
+        $body
+
+    ## ATTACHMENTS
+    #elseif ($mode == "view-attachments" || $mode == "move-attachments")
+        #requireResourcesForContext("viewattachments")
+        $body
+    #elseif ($mode == "view-attachment")
+        #requireResourcesForContext("viewattachments")
+        $body
+    #end
+    ## MODE SPECIFIC DECORATING ENDS
+
+</div>
+## GENERAL PAGE DECORATING ENDS
+
+## SITEMESH PROPERTIES
+<content tag="suppressPdfLink">true</content>
+
+#parse ("/pages/page-breadcrumbs.vm")
+#if ($mode != "edit" && $mode != "edit-preview")
+    #parse("/template/includes/space-tools-web-items.vm")
+#end
+#menuMacros_renderBrowseMenu()

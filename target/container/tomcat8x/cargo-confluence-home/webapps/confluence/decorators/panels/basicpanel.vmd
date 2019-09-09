@@ -1,0 +1,15 @@
+#set ($title = $params.get("title"))
+#set ($body = $params.get("body"))
+#set ($width = $params.get("width"))
+
+<div class="basicPanelContainer" #if ($width) style="width: $width" #end>
+    #if ($title)
+    <div class="basicPanelTitle">
+        $title
+    </div>
+    #end
+    <div class="basicPanelBody">
+        $body
+    </div>
+</div>
+

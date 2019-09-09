@@ -1,0 +1,61 @@
+#macro (errorBlock $msg)
+<div class="error" tabindex="0"><p>$msg</p></div>
+#end
+
+<html>
+	<head>
+        #requireResource("confluence.web.resources:master-styles")
+        #requireResource("confluence.web.resources:aui-forms")
+	    #if( $fromNotPermitted )
+		    <title>$action.getText("title.not.permitted")</title>
+	    #else
+		    <title>$action.getActionName($action.getClass().getName()) </title>
+		    <content tag="pageTitle"><a href="${req.contextPath}/homepage.action">$action.getText("websudo.title")</a></content>
+		#end
+	</head>
+	<body>
+        <content tag="bodyClass">login</content>
+
+        #parse ( "/template/includes/actionerrors.vm" )
+
+        <div id="login-container" class="websudo">
+
+                <h2>$action.getText("websudo.title")</h2>
+            #if ($remoteUser)
+
+            #applyDecorator ("message")
+                #decoratorParam("type" "warning")
+                $action.getText("websudo.warning")
+            #end
+            <p>$action.getText("websudo.description")</p>
+
+            #applyDecorator("form-aui")
+                #decoratorParam("formName" "authenticateform")
+                #decoratorParam("submitAction"  "$req.contextPath/doauthenticate.action")
+                #decoratorParam("editAction" "$req.contextPath/authenticate.action")
+                #decoratorParam("editMode" "true")
+                #decoratorParam("formStyle" "login-form-container")
+
+                <fieldset class="compact-form-fields">
+                    <legend class="assistive">$action.getText("websudo.warning")</legend>
+                    <legend class="assistive">$action.getText("websudo.description")</legend>
+                    <div class="field-group viewMode">
+                        <label id="username-label">$action.getText("username.accesskey")</label>
+                        <span class="field-value">$username</span>
+                        <a id="login-notyou" href="$req.contextPath/logout.action">$action.getText('websudo.notyou')</a>
+                    </div>
+                    #bodytag( "Password" "label='password.accesskey'" "name='password'" "theme='aui'")
+                        #param("focus" "0")
+                    #end
+
+                    <div class="field-group form-buttons compact-form-buttons">
+                        <input id="authenticateButton" name="authenticate" type="submit" class="aui-button" value="$action.getText('websudo.button')" />
+                        <a id="login-cancel" href="$req.contextPath/dashboard.action" class="aui-button aui-button-link">$action.getText('cancel.name')</a>
+                    </div>
+                    <input type="hidden" name="destination" value="$!generalUtil.escapeXml($!destination)"/>
+                </fieldset>
+            #end
+        #end
+        </div>
+	</body>
+</html>

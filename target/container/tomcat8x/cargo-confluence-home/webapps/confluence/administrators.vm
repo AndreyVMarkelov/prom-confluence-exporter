@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<title>$action.getText("title.administrators")</title>
+	</head>
+	<body>
+	    #parse ( "/template/includes/actionerrors.vm" )
+        <p>$action.getText("administrators.subheading")</p>
+		#if ($actionErrors.size() == 0)
+            <div align="center">
+                #if ($administrators.size() == 0)
+                    $action.getText("no.admins")
+                #else
+                    <table class="grid">
+                        <th colspan="2">$action.getText("title.administrators")</th>
+                        #foreach ($admin in $administrators)
+                            <tr>
+                                <td>#userLink($admin)</td>
+                                <td><a href="mailto:$generalUtil.maskEmail($admin.email)">$generalUtil.maskEmail($admin.email)</a></td>
+                            </tr>
+                        #end
+                    </table>
+                #end
+            </div>
+        #end
+	    #parse ( "/breadcrumbs.vm" )
+	</body>
+</html>

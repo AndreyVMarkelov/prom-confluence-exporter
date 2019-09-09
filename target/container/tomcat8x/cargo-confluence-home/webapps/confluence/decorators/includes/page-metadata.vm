@@ -1,0 +1,9 @@
+#skiplink("page-metadata", $i18n.getText("assistive.skiplink.to.metadata.start"), $i18n.getText("assistive.skiplink.to.metadata.end"))
+    <div class="page-metadata">
+        <ul>
+            <li class="page-metadata-modification-info">
+                #pageByline($page $action.dateFormatter false)
+            </li>
+        </ul>
+    </div>
+#end

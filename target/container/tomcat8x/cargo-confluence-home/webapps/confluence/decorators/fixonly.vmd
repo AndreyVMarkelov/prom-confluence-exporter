@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>$title - #siteTitle()</title>
+    <!-- Inline CSS because we can't use Confluence's stylesheet mechanism at this point in the lifecycle -->
+	<style type="text/css">
+		body, p, td, table, tr {
+			font-family: Arial, Helvetica, FreeSans, sans-serif;
+			font-size: 11pt;
+			line-height: 13pt;
+			color: #000000;
+			font-weight: normal;
+		}
+		
+		body {
+			padding: 10px;
+		    background: #fff;
+		}
+
+        h1 {
+            color: #003366;
+        }
+
+	</style>
+</head>
+<body>
+
+<h1><img src="$req.contextPath/images/logo/confluence_48_white.png" alt="Confluence Logo" align="absmiddle"> #if ($sitemeshPage.getProperty("page.heading")) $sitemeshPage.getProperty("page.heading") #else Confluence #end</h1>
+
+$body
+
+</body>
+</html>

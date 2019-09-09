@@ -1,0 +1,6 @@
+
+#applyDecorator("root")
+    #decoratorParam("confPage" $helper.page)
+    #decoratorParam("context" "sharedcomments")
+#end
+

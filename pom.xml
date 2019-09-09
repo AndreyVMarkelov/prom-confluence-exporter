@@ -97,7 +97,7 @@
     </build>
 
     <properties>
-        <confluence.version>6.14.2</confluence.version>
+        <confluence.version>5.8.6</confluence.version>
         <confluence.data.version>${confluence.version}</confluence.data.version>
         <amps.version>6.3.21</amps.version>
         <prometheus.version>0.6.0</prometheus.version>

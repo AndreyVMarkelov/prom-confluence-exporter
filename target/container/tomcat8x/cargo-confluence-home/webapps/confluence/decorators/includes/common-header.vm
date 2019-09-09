@@ -1,0 +1,31 @@
+#httpStatsElapse('commonsHeaderStart')
+#set ($primary = "#parse('/decorators/includes/aui-header-primary.vm')")
+#set ($secondary = "#parse('/decorators/includes/aui-header-secondary.vm')")
+
+#set ($appswitcher = $soyTemplateRendererHelper.getRenderedTemplateHtml("com.atlassian.plugins.atlassian-nav-links-plugin:rotp-menu", "navlinks.templates.appswitcher.switcher.soy", {}))
+
+#if ($settingsManager.globalSettings.showApplicationTitle())
+    #set ($headerText = $settingsManager.globalSettings.siteTitle)
+#else
+    #set ($headerText = "")
+#end
+
+#set ($templateParameters = {
+            "headerLogoText": $settingsManager.globalSettings.siteTitle,
+            "headerLink": "${req.contextPath}/",
+            "headerText": $headerText,
+            "logo": "confluence",
+            "primaryNavContent": $primary,
+            "secondaryNavContent": $secondary,
+            "headerBeforeContent": $appswitcher.toString()
+})
+
+#if ($siteLogoHelper.usesCustomLogo)
+    #set($dummy = $templateParameters.put("headerLogoImageUrl",$siteLogoHelper.headerLogoImageUrl))
+#end
+
+<header id="header" role="banner">
+    $soyTemplateRendererHelper.getRenderedTemplateHtml("com.atlassian.auiplugin:aui-experimental-soy-templates", "aui.page.header.soy", $templateParameters)
+    <br class="clear">
+</header>
+#httpStatsElapse('commonsHeaderFinished')

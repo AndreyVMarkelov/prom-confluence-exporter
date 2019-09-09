@@ -1,0 +1,52 @@
+## TODO: Show labels only if there is a matching label
+	<h3 class="search-result-title">#newSearchResultContentLink($searchResult)#if ($searchResult.type == "userinfo") ($htmlUtil.htmlEncode($searchResult.extraFields.username))#end</h3>
+
+    <div class="hidden">
+        <input type="hidden" class="search-result-entry-content-id" value="${searchResult.handle.toString()}">
+    </div>
+
+	#set ($webInterfaceContext = $action.getWebInterfaceContext($searchResult))
+	#set ($primaryItems = $webInterfaceManager.getDisplayableItems("system.search/result.primary", $webInterfaceContext))
+
+	#if ($searchResult.type == "attachment" || $primaryLinks.size())
+    <ul class="search-result-metadata">
+        #if($searchResult.type == "attachment")
+        <li>$!searchResult.extraFields.attachmentReadableFileSize</li>
+        #if ($searchResult.extraFields.attachmentTypeDescription)
+            <li>$!searchResult.extraFields.attachmentTypeDescription</li>
+        #end
+        #end
+        #foreach ($item in $primaryItems)
+            #renderItem($item $webInterfaceContext)
+        #end
+        <li><a href="$req.contextPath$searchResult.extraFields.attachmentDownloadPath">$action.getText('download.name')</a></li>
+    </ul>
+	#end
+    #if ("true" == $showExcerpts)
+            <p class="search-result-summary">$action.getSummaryForResult($searchResult)</p>
+    #end
+    #if ($searchResult.type != "spacedesc" && $searchResult.type != "personalspacedesc")
+    <ul class="search-result-metadata">
+        #if ($searchResult.type != "userinfo")
+            #if ($searchResult.type == "attachment")
+                <li><a href="$req.contextPath/display/$htmlUtil.urlEncode($searchResult.spaceKey)">$htmlUtil.htmlEncode($searchResult.spaceName)</a>
+                    &gt; <a href="$req.contextPath$searchResult.extraFields.containingContentUrlPath">$htmlUtil.htmlEncode($searchResult.extraFields.containingContentDisplayTitle)</a>
+                    &gt; <a href="$req.contextPath$searchResult.urlPath">$action.getText('type.attachments')</a></li>
+            #elseif ($searchResult.type == "mail")
+                <li><a href="$req.contextPath/display/$htmlUtil.urlEncode($searchResult.spaceKey)">$htmlUtil.htmlEncode($searchResult.spaceName)</a>
+                    &gt; <a href="$req.contextPath$searchResult.urlPath">$action.getText('type.mail')</a></li>
+            #elseif ($searchResult.type == "status")
+                <li><a href="$req.contextPath/display/~$htmlUtil.urlEncode($searchResult.creator)">$htmlUtil.htmlEncode($searchResult.extraFields.creatorFullName)</a></li>
+            #else
+                <li><a href="$req.contextPath/display/$htmlUtil.urlEncode($searchResult.spaceKey)">$htmlUtil.htmlEncode($searchResult.spaceName)</a></li>
+            #end
+            <li>$action.dateFormatter.format($searchResult.lastModificationDate)</li>
+        #else
+            #set ($email = $generalUtil.maskEmail($searchResult.extraFields.email))
+            #if ($email && "hidden" != $email)
+            <li>#if ($email == $searchResult.extraFields.email)<a href="mailto:$email">$email</a>
+                #else $email #end</li>
+            #end
+        #end
+    </ul>
+    #end

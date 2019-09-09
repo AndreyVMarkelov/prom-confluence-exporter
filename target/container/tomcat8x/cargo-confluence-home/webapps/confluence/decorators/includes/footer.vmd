@@ -1,0 +1,7 @@
+## TODO remove usage in leftnav theme
+## deprecated - use footer.vm
+<div id="footer">
+   #bottomshadow()
+   #poweredby()
+   #javascripts()
+</div>

@@ -1,0 +1,4 @@
+This is a dummy velocity template used by the decorator editing subsystem to locate
+the WebWork resource loader (you have to get a template, then get its resource loader).
+
+If you remove this template or override it, you won't be able to edit decorators properly.

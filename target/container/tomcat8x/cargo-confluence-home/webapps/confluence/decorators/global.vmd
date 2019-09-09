@@ -1,0 +1,83 @@
+#* @vtlvariable name="params" type="java.util.Map<java.lang.String, java.lang.Object>" *#
+#* @vtlvariable name="infoPanelRequired" type="java.lang.Boolean" *#
+#* @vtlvariable name="action" type="com.atlassian.confluence.dashboard.actions.DashboardAction" *#
+#* @vtlvariable name="body" type="java.lang.String" *#
+#* @vtlvariable name="helper" type="com.atlassian.confluence.themes.GlobalHelper" *#
+
+## GLOBAL DECORATOR
+##    This decorator handles a global context, i.e. information which is independent of space.
+##    Supports modes: 'dashboard', 'userdir', 'rss'.
+
+#set ($mode     = $params.get("mode"))
+#set ($context  = $params.get("context"))
+#set ($helper   = $params.get("helper"))
+
+#macro(renderInfoPanel)
+    ## INFO PANEL FOR ANY PAGE
+    #infoPanelInitFromParams()
+    #if ($infoPanelRequired)
+        <div style="width: $params.get("infopanel-width")" id="helptd">
+            #infoPanel(true true true true)
+        </div>
+    #end
+#end
+
+#macro(renderDashboardPanels $panelLocation)
+    $deprecated.since("6.0")
+    #foreach ($webPanel in $webInterfaceManager.getDisplayableWebPanels($panelLocation, {}))
+    <div class="dashboard-item">
+        $!webPanel.getHtml($req.getParameterMap())
+    </div>
+    #end
+#end
+
+#requireResourcesForContext("global")
+<div class="pagebody">
+#parse ( "/template/includes/actionerrors.vm" )
+
+#if ($mode == "dashboard")
+    #rssautodiscovery($action.rssDescriptor)
+    #permitSearchEngines()
+    ## If one or more plugins provide a web-panel to replace the dashbaord, we use the first one
+    #set ($dashboardWebPanels = $webInterfaceManager.getDisplayableWebPanels("atl.dashboard", {}))
+
+    ## Dashboard from plugin
+    <content tag="show-main-container">false</content>
+    #if(!$darkFeatures.isDarkFeatureEnabled('react.ui.dashboard'))
+        $!dashboardWebPanels.get(0).getHtml({})
+    #else
+    ## TODO: Remove this container once the parent container is converted to React.
+    ## NOTE: This container should not be targetted with CSS or test rules.
+        <div id="confluence-ui" class="confluence-dashboard"></div>
+        <script>
+            var __INITIAL_STATE__ = typeof __INITIAL_STATE__ !== 'undefined' ? __INITIAL_STATE__ : {};
+        </script>
+        #if($darkFeatures.isDarkFeatureEnabled('react.ui.experimental'))
+            <script src="https://confluence-frontend-experiment.internal.domain.dev.atlassian.io/download/vendor.js"></script>
+            <script src="https://confluence-frontend-experiment.internal.domain.dev.atlassian.io/download/app.js"></script>
+        #else
+            <script src="$action.getFrontendServiceURL()/download/vendor.js"></script>
+            <script src="$action.getFrontendServiceURL()/download/app.js"></script>
+        #end
+    #end
+
+#else
+    ## Non-dashboard page
+    #if ($params.get("suppress-default-navigation") != "true")
+        <content tag="content-navigation">
+            <div id="navigation" class="content-navigation">
+                <ul class="ajs-menu-bar">
+                    #menuMacros_renderButton("system.${mode}.button" "")
+                </ul>
+            </div>
+        </content>
+    #end
+    <div class="dashboard-group $!mode">
+        $body
+    </div>
+
+    #renderInfoPanel()
+#end
+</div>
+
+#parse ( "/breadcrumbs.vm" )

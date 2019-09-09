@@ -1,0 +1,5 @@
+#set($isSpaceSearchEnabled = false)
+<ul class="aui-nav">
+    #menuMacros_renderHeaderRightImageLinks()
+    #menuMacros_renderHeaderRightPanels()
+</ul>

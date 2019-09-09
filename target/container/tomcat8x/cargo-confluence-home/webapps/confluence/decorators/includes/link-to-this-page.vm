@@ -1,0 +1,16 @@
+#* @vtlvariable name="globalSettings" type="com.atlassian.confluence.setup.settings.Settings" *#
+#* @vtlvariable name="page" type="com.atlassian.confluence.pages.AbstractPage" *#
+#if ($page && $action.tinyUrl)
+<content tag="canonical">
+    ##We want search engines to index the current version of the page, not the historical ones.
+    #if ($helper.isHistoricalVersion())
+        <link rel="canonical" href="$globalSettings.baseUrl$htmlUtil.htmlEncode($generalUtil.getPageUrl($page.originalVersion))">
+    #else
+        <link rel="canonical" href="$globalSettings.baseUrl$htmlUtil.htmlEncode($generalUtil.getPageUrl($page))">
+    #end
+    <link rel="shortlink" href="${globalSettings.baseUrl}/x/$action.tinyUrl">
+    <meta name="wikilink" content="$htmlUtil.htmlEncode($page.linkWikiMarkup)">
+    <meta name="page-version" content="$page.version">
+    <meta name="ajs-page-version" content="$page.version">
+</content>
+#end

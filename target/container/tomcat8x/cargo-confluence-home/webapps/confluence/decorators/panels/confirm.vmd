@@ -1,0 +1,11 @@
+#set($cssClasses = $params.get('cssClasses'))
+<div class="greyboxfilled#if($cssClasses) $cssClasses#end">
+    <form name="$params.get('formName')" action="$params.get('formAction')" method="post" class="aui">
+    #form_xsrfToken()
+        <p>$body</p>
+    #bodytag("Submit" "theme='aui'")
+        #param("editMode" "true")
+        #param("submitValue" $i18n.getText("ok"))
+    #end
+    </form>
+</div>

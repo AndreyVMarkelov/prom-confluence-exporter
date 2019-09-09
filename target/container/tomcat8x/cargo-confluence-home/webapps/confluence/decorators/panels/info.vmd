@@ -1,0 +1,20 @@
+####
+##This has become redundant as of CONFDEV-2281. message-aui.vmd should be used instead.
+####
+
+#set ($id = $params.get("id"))
+#set ($invisible = $params.get("invisible"))
+#set ($title = $params.get("title"))
+
+<div class="aui-message info" #if ($id) id="$!id" #end #if($invisible) style="display: none;" #end>
+    #if ($title && $title.length() > 0)
+        <p class="title">
+            <span class="svg-icon info size-18"></span>
+            <strong>$title</strong>
+        </p>
+    #else
+        <span class="svg-icon info size-18"></span>
+    #end
+
+    $body
+</div>

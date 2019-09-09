@@ -1,0 +1,96 @@
+    <head>
+        <title>
+            $action.getText("colourpicker.title")
+        </title>
+    </head>
+<p>
+
+<script language="JavaScript" type="text/javascript">
+<!--
+var openerField = opener.document.getElementById("$action.colourKey");
+var defaultColor = openerField.value;
+var choice = false;
+
+function colorIn(color) {
+    if (!choice) {
+        openerField.value = color;
+        setSwatchColor(openerField.id, color);
+        document.f.colorVal.value = color;
+    }
+}
+
+function setSwatchColor(fieldid, color) {
+        var foo = opener.document.getElementById("swatch." + fieldid);
+        foo.style.backgroundColor = color;
+}
+
+function accept() {
+    ok();
+}
+function choiceController() {
+    if (document.f.formAction.value == "cancel") {
+        cancel();
+    }
+    else {
+        ok();
+    }
+}
+function ok() {
+    openerField.value = document.f.colorVal.value;
+    setSwatchColor(openerField.id, document.f.colorVal.value);
+    window.close();
+}
+function cancel() {
+    openerField.value = defaultColor;
+    setSwatchColor(openerField.id, defaultColor);
+    window.close();
+}
+//-->
+</script>
+
+$action.getText("click.to.choose.colour")
+
+<p>
+<form name="f" onsubmit="choiceController();">
+<input type="hidden" name="formAction" value="">
+<table cellpadding="0" cellspacing="1" border="1" align="center" class="colour-picker">
+#foreach ($i in $action.hex)
+   <tr>
+   #foreach ($j in $action.hex)
+      #foreach ($k in $action.hex)
+        <td bgcolor="#$i$j$k" style="background:#$i$j$k;"
+          ><a href="#" onmouseover="colorIn('#$i$j$k');" onclick="accept();return false;"
+          ><img src="$staticResourceUrlPrefix/images/border/spacer.gif" width="10" height="15" alt="#$i$j$k" border="0"></a></td>
+      #end
+   #end
+</tr>
+#end
+<tr>
+    <td colspan="$action.tableWidth" align="center">
+    <table cellpadding="0" cellspacing="1" border="1" align="center" width="100%">
+    <tr>
+#foreach ($i in $action.bigHex)
+    <td bgcolor="#$i"
+     ><a href="#" onmouseover="colorIn('#$i');" onclick="accept();return false;"
+     ><img src="$staticResourceUrlPrefix/images/border/spacer.gif" width="12" height="15" alt="#$i" border="0"></a></td>
+#end
+    </tr>
+    </table>
+    </td>
+</tr>
+<tr>
+    <td colspan="$action.tableWidth">
+    <table width="100%">
+    <tr>
+        <td><input type="text" size="10" name="colorVal" autofocus="autofocus"></td>
+        <td align="right">
+            <input type="submit" value="$action.getText('ok')" name="ok" onclick="this.form.formAction.value='ok';">
+            <input type="submit" value="$action.getText('cancel.name')" name="cancel" onclick="this.form.formAction.value='cancel';">
+        </td>
+    </tr>
+    </table>
+    </td>
+</tr>
+</table>
+</form>
+

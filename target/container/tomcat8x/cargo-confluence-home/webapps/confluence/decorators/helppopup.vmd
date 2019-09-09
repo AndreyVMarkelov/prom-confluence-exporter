@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>#if ($title) $title #else Confluence Help #end</title>
+
+    #standardHeader()
+</head>
+<body>
+<div id="full-height-container">
+	<table border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tr class="topBar"><td>&nbsp;</td></tr>
+
+	<tr>
+    <td valign="top" class="pagebody">
+        <div class="pagecontent" style="background: white">
+        <div class="pageheader">
+            <span class="pagetitle">#if ($title) $title #else Confluence Help #end</span>
+        </div>
+
+        <p>$body</p>
+        </div>
+    </td></tr>
+    </table>
+
+#parse ("/decorators/includes/footer.vm")
+</div>
+</body>
+</html>
