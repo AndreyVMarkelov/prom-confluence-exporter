@@ -48,12 +48,14 @@ public class MetricListener implements InitializingBean, DisposableBean {
     }
 
     //--> Cluster
+
     @EventListener
     public void onClusterPanicEvent(ClusterPanicEvent clusterPanicEvent) {
         metricCollector.clusterPanicCounter();
     }
 
     // Labels
+
     @EventListener
     public void onLabelAddEvent(LabelAddEvent labelAddEvent) {
         if (labelAddEvent.getLabelled() instanceof AbstractPage) {
@@ -95,12 +97,14 @@ public class MetricListener implements InitializingBean, DisposableBean {
     }
 
     // Reindex
+
     @EventListener
     public void onClusterReindexRequiredEvent(ClusterReindexRequiredEvent clusterReindexRequiredEvent) {
 
     }
 
     // Space
+
     @EventListener
     public void onSpaceRemoveEvent(SpaceRemoveEvent spaceRemoveEvent) {
         String username = AuthenticatedUserThreadLocal.getUsername();
@@ -160,7 +164,7 @@ public class MetricListener implements InitializingBean, DisposableBean {
         metricCollector.userLoginFailedCounter(username, ip);
     }
 
-    // plugins
+    // Plugins
 
     @EventListener
     public void onPluginEnabledEvent(PluginEnabledEvent pluginEnabledEvent) {

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.andreymarkelov.atlas.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.16</version>
+    <version>1.0.18</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Prometheus Exporter For Confluence</name>
@@ -13,6 +13,12 @@
         <name>Andrey Markelov</name>
         <url>http://ru.linkedin.com/in/andreymarkelov/</url>
     </organization>
+
+    <scm>
+        <url>https://github.com/AndreyVMarkelov/prom-confluence-exporter</url>
+        <connection>scm:git:https://github.com/AndreyVMarkelov/prom-confluence-exporter.git</connection>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -79,11 +85,19 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <properties>
-        <confluence.version>5.8.6</confluence.version>
+        <confluence.version>6.14.2</confluence.version>
         <confluence.data.version>${confluence.version}</confluence.data.version>
         <amps.version>6.3.21</amps.version>
         <prometheus.version>0.6.0</prometheus.version>

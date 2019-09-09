@@ -2,7 +2,7 @@
     <plugin-info>
         <description>${project.description}</description>
         <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <vendor name="cPrime, Inc." url="https://www.cprime.com/"/>
         <param name="plugin-logo">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/prom-exporter.png</param>
         <param name="plugin-icon">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/prom-exporter-sm.png</param>
         <param name="vendor-icon">/ru/andreymarkelov/atlas/plugins/promconfluenceexporter/images/32.jpg</param>
@@ -78,6 +78,10 @@
     <component name="Scheduled Metrics Evaluator" key="prom-for-confluence-exporter-evaluator" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScheduledMetricEvaluatorImpl">
         <description>This service evaluates metrics in separate threads.</description>
         <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.ScheduledMetricEvaluator</interface>
+    </component>
+    <component name="JMX Metrics Evaluator" key="prom-for-confluence-exporter-jmx-evaluator" class="ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.JmxMetricEvaluatorImpl">
+        <description>This service evaluates metrics in separate threads.</description>
+        <interface>ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager.JmxMetricEvaluator</interface>
     </component>
 
     <!-- Component Imports -->

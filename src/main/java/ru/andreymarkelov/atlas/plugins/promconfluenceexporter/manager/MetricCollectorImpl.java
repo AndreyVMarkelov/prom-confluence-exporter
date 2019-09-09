@@ -6,11 +6,7 @@ import com.atlassian.confluence.license.exception.LicenseException;
 import com.atlassian.core.task.ErrorQueuedTaskQueue;
 import com.atlassian.core.task.MultiQueueTaskManager;
 import com.atlassian.extras.api.confluence.ConfluenceLicense;
-import io.prometheus.client.Collector;
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
-import io.prometheus.client.Histogram;
+import io.prometheus.client.*;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,16 +31,19 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
     private final ScheduledMetricEvaluator scheduledMetricEvaluator;
     private final CollectorRegistry registry;
     private final MultiQueueTaskManager taskManager;
+    private final JmxMetricEvaluator jmxMetricEvaluator;
 
     public MetricCollectorImpl(
             ClusterManager clusterManager,
             LicenseService licenseService,
             ScheduledMetricEvaluator scheduledMetricEvaluator,
-            MultiQueueTaskManager taskManager) {
+            MultiQueueTaskManager taskManager,
+            JmxMetricEvaluator jmxMetricEvaluator) {
         this.clusterManager = clusterManager;
         this.licenseService = licenseService;
         this.scheduledMetricEvaluator = scheduledMetricEvaluator;
         this.taskManager = taskManager;
+        this.jmxMetricEvaluator = jmxMetricEvaluator;
         this.registry = CollectorRegistry.defaultRegistry;
     }
 
@@ -356,6 +355,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         jvmUptimeGauge.set(ManagementFactory.getRuntimeMXBean().getUptime());
 
         List<MetricFamilySamples> result = new ArrayList<>();
+        result.addAll(jmxMetricEvaluator.metrics());
         result.addAll(clusterPanicCounter.collect());
         result.addAll(labelCreateCounter.collect());
         result.addAll(labelRemoveCounter.collect());
