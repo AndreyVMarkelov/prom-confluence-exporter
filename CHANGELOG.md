@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.19] (v5.4.1 - 7.0.1)
+
+- confluence_jmx_request_avg_exectime_of_ten_requests
+- confluence_jmx_request_current_served_number
+- confluence_jmx_request_errorpage_count
+- confluence_jmx_request_num_in_last_ten_seconds
+
 ## [1.0.18] (v5.4.1 - 6.15.9)
 
 - confluence_jmx_indexstat_flushing (Indicate whether the cache is currently flushing)
