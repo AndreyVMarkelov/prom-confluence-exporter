@@ -1,6 +1,7 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
 import io.prometheus.client.Collector;
+import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,8 @@ import java.util.List;
 
 public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
     private static final Logger log = LoggerFactory.getLogger(JmxMetricEvaluatorImpl.class);
+
+    private int lastRequestErrorCount = 0;
 
     // IndexingStatistics
 
@@ -43,6 +46,28 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
             .help("Shows the latency of an example query performed against the database")
             .create();
 
+    // RequestStatistics
+
+    private final Gauge requestAvgExecTimeForLastTenRequests = Gauge.build()
+            .name("confluence_jmx_request_avg_exectime_of_ten_requests")
+            .help("Shows the latency of an example query performed against the database")
+            .create();
+
+    private final Gauge requestCurrentNumberOfRequestsBeingServed = Gauge.build()
+            .name("confluence_jmx_request_current_served_number")
+            .help("Number of requests being served at this instant")
+            .create();
+
+    private final Counter requestErrorCount = Counter.build()
+            .name("confluence_jmx_request_errorpage_count")
+            .help("Number of times the Confluence error page was served")
+            .create();
+
+    private final Gauge requestNumberInLastTenSeconds = Gauge.build()
+            .name("confluence_jmx_request_num_in_last_ten_seconds")
+            .help("The number of requests in the last ten seconds")
+            .create();
+
     private final MBeanServer mBeanServer;
 
     public JmxMetricEvaluatorImpl() {
@@ -53,13 +78,21 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
     public List<Collector.MetricFamilySamples> metrics() {
         indexStatistics();
         systemStatistics();
+        requestStatistics();
 
         List<Collector.MetricFamilySamples> res = new ArrayList<>();
+        // index
         res.addAll(indexStatFlushing.collect());
         res.addAll(indexStatLastDuration.collect());
         res.addAll(indexStatTaskQueueLength.collect());
         res.addAll(indexStatReIndexing.collect());
+        // system
         res.addAll(systemStatDbLatency.collect());
+        // requests
+        res.addAll(requestAvgExecTimeForLastTenRequests.collect());
+        res.addAll(requestCurrentNumberOfRequestsBeingServed.collect());
+        res.addAll(requestErrorCount.collect());
+        res.addAll(requestNumberInLastTenSeconds.collect());
         return res;
     }
 
@@ -84,15 +117,30 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
         }
     }
 
+    private void requestStatistics() {
+        try {
+            ObjectName objectName = new ObjectName("Confluence:name=RequestMetrics");
+            requestAvgExecTimeForLastTenRequests.set(getInt(mBeanServer.getAttribute(objectName, "AverageExecutionTimeForLastTenRequests")));
+            requestCurrentNumberOfRequestsBeingServed.set(getInt(mBeanServer.getAttribute(objectName, "CurrentNumberOfRequestsBeingServed")));
+            requestNumberInLastTenSeconds.set(getInt(mBeanServer.getAttribute(objectName, "NumberOfRequestsInLastTenSeconds")));
+
+            int currentRequestErrorCount = getInt(mBeanServer.getAttribute(objectName, "ErrorCount"));
+            requestErrorCount.inc(currentRequestErrorCount - lastRequestErrorCount);
+            lastRequestErrorCount = currentRequestErrorCount;
+        } catch (Exception ex) {
+            log.error("Cannot load JMX request stats", ex);
+        }
+    }
+
     private static double getBoolean(Object obj) {
         return obj != null ? ((Boolean) obj ? 1 : 0) : 0;
     }
 
-    private static double getInt(Object obj) {
+    private static int getInt(Object obj) {
         return obj != null ? (Integer) obj : 0;
     }
 
-    private static double getLong(Object obj) {
+    private static long getLong(Object obj) {
         return obj != null ? (Long) obj : 0L;
     }
 }
