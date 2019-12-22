@@ -79,6 +79,7 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
         indexStatistics();
         systemStatistics();
         requestStatistics();
+        cacheStatistics();
 
         List<Collector.MetricFamilySamples> res = new ArrayList<>();
         // index
@@ -129,6 +130,14 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
             lastRequestErrorCount = currentRequestErrorCount;
         } catch (Exception ex) {
             log.error("Cannot load JMX request stats", ex);
+        }
+    }
+
+    private void cacheStatistics() {
+        try {
+            ObjectName objectName = new ObjectName("Confluence:name=CacheStatistics");
+        } catch (Exception ex) {
+            log.error("Cannot load JMX cache stats", ex);
         }
     }
 

@@ -1,24 +1,11 @@
 package ru.andreymarkelov.atlas.plugins.promconfluenceexporter.manager;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nonnull;
-
 import com.atlassian.confluence.security.login.LoginInfo;
 import com.atlassian.confluence.security.login.LoginManager;
 import com.atlassian.confluence.status.service.SystemInformationService;
 import com.atlassian.confluence.status.service.systeminfo.UsageInfo;
 import com.atlassian.confluence.user.UserAccessor;
+import com.atlassian.confluence.util.GeneralUtil;
 import com.atlassian.confluence.util.UserChecker;
 import com.atlassian.user.User;
 import net.sf.hibernate.HibernateException;
@@ -31,6 +18,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.annotation.Nonnull;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static java.lang.Thread.MIN_PRIORITY;
 import static java.util.concurrent.Executors.defaultThreadFactory;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
@@ -42,6 +43,8 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
     private static final String ATTACHMENT_SQL_OLD = "SELECT sum(FILESIZE) FROM ATTACHMENTS";
     private static final String PAGE_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE CONTENTTYPE = 'PAGE' AND PREVVER IS NULL AND CONTENT_STATUS = 'current'";
     private static final String BLOGPOST_SQL = "SELECT count(CONTENTID) FROM CONTENT WHERE CONTENTTYPE = 'BLOGPOST' AND PREVVER IS NULL AND CONTENT_STATUS = 'current'";
+
+    private static final String MISSED_ATTACHMENT_TABLE_VERSION = "5.7.0";
 
     private final ScrapingSettingsManager scrapingSettingsManager;
     private final SessionFactory sessionFactory;
@@ -277,7 +280,7 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
                 try (ResultSet rs = statement.executeQuery(ATTACHMENT_SQL)) {
                     if (rs.next()) {
                         Long value = rs.getLong(1);
-                        if (rs.wasNull()) {
+                        if (rs.wasNull() && MISSED_ATTACHMENT_TABLE_VERSION.compareTo(GeneralUtil.getVersionNumber()) > 0) {
                             try (ResultSet rs2 = statement.executeQuery(ATTACHMENT_SQL_OLD)) {
                                 if (rs2.next()) {
                                     totalAttachmentSize.set(rs2.getLong(1));
