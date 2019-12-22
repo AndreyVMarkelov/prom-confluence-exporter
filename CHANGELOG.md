@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.20] (v5.4.1 - 7.2.x)
+- Fix NPE if attachments empty for versions after 5.7.x
+- upgrade prometheus client to 0.8.0
+
 ## [1.0.19] (v5.4.1 - 7.0.1)
 
 - confluence_jmx_request_avg_exectime_of_ten_requests
