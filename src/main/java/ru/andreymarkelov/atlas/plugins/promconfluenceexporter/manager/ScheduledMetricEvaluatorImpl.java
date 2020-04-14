@@ -248,7 +248,12 @@ public class ScheduledMetricEvaluatorImpl implements ScheduledMetricEvaluator, D
 
     private void calculateTotalUsers() {
         try {
-            totalUsers.set(userChecker.getNumberOfRegisteredUsers());
+            Integer numberOfRegisteredUsers = userChecker.getNumberOfRegisteredUsers();
+            if (numberOfRegisteredUsers.intValue() != -1) {
+                totalUsers.set(numberOfRegisteredUsers);
+            } else {
+                log.warn("userChecker.getNumberOfRegisteredUsers() returned -1");
+            }
         } catch (Throwable th) {
             log.error("Cannot get list users with access", th);
         }
