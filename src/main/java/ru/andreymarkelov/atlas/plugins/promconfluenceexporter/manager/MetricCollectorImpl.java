@@ -330,9 +330,9 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         // license
         try {
             ConfluenceLicense confluenceLicense = licenseService.retrieve();
-            licenseExpiryDaysGauge.set(confluenceLicense.getNumberOfDaysBeforeExpiry());
             maintenanceExpiryDaysGauge.set(confluenceLicense.getNumberOfDaysBeforeMaintenanceExpiry());
             allowedUsersGauge.set(confluenceLicense.getMaximumNumberOfUsers());
+            licenseExpiryDaysGauge.set(confluenceLicense.getNumberOfDaysBeforeExpiry());
         } catch (LicenseException ex) {
             log.error("Cannot retrieve license", ex);
         }
