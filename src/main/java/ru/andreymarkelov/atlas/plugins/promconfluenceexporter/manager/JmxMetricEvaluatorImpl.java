@@ -6,6 +6,7 @@ import io.prometheus.client.Gauge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
@@ -104,6 +105,8 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
             indexStatLastDuration.set(getLong(mBeanServer.getAttribute(objectName, "LastElapsedMilliseconds")));
             indexStatTaskQueueLength.set(getInt(mBeanServer.getAttribute(objectName, "TaskQueueLength")));
             indexStatReIndexing.set(getBoolean(mBeanServer.getAttribute(objectName, "ReIndexing")));
+        } catch (InstanceNotFoundException ex) {
+            log.warn("JMX stat not found in JVM", ex);
         } catch (Exception ex) {
             log.error("Cannot load JMX index stats", ex);
         }
@@ -113,6 +116,8 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
         try {
             ObjectName objectName = new ObjectName("Confluence:name=SystemInformation");
             systemStatDbLatency.set(getLong(mBeanServer.getAttribute(objectName, "DatabaseExampleLatency")));
+        } catch (InstanceNotFoundException ex) {
+            log.warn("JMX stat not found in JVM", ex);
         } catch (Exception ex) {
             log.error("Cannot load JMX system stats", ex);
         }
@@ -128,6 +133,8 @@ public class JmxMetricEvaluatorImpl implements JmxMetricEvaluator {
             int currentRequestErrorCount = getInt(mBeanServer.getAttribute(objectName, "ErrorCount"));
             requestErrorCount.inc(currentRequestErrorCount - lastRequestErrorCount);
             lastRequestErrorCount = currentRequestErrorCount;
+        } catch (InstanceNotFoundException ex) {
+            log.warn("JMX stat not found in JVM", ex);
         } catch (Exception ex) {
             log.error("Cannot load JMX request stats", ex);
         }
