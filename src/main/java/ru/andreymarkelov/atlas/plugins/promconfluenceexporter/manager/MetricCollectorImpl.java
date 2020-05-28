@@ -52,6 +52,11 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             .help("Maintenance Expiry Days Gauge")
             .create();
 
+    private final Gauge licenseExpiryDaysGauge = Gauge.build()
+            .name("confluence_license_expiry_days_gauge")
+            .help("License Expiry Days Gauge")
+            .create();
+
     private final Gauge activeUsersGauge = Gauge.build()
             .name("confluence_active_users_gauge")
             .help("Active Users Gauge")
@@ -327,6 +332,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
             ConfluenceLicense confluenceLicense = licenseService.retrieve();
             maintenanceExpiryDaysGauge.set(confluenceLicense.getNumberOfDaysBeforeMaintenanceExpiry());
             allowedUsersGauge.set(confluenceLicense.getMaximumNumberOfUsers());
+            licenseExpiryDaysGauge.set(confluenceLicense.getNumberOfDaysBeforeExpiry());
         } catch (LicenseException ex) {
             log.error("Cannot retrieve license", ex);
         }
@@ -367,6 +373,7 @@ public class MetricCollectorImpl extends Collector implements MetricCollector, D
         result.addAll(requestDurationOnPath.collect());
         result.addAll(totalClusterNodeGauge.collect());
         result.addAll(maintenanceExpiryDaysGauge.collect());
+        result.addAll(licenseExpiryDaysGauge.collect());
         result.addAll(allowedUsersGauge.collect());
         result.addAll(activeUsersGauge.collect());
         result.addAll(totalCurrentContentGauge.collect());
