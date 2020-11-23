@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.cprime.atlassian.plugins</groupId>
     <artifactId>prom-confluence-exporter</artifactId>
-    <version>1.0.26</version>
+    <version>1.0.27</version>
     <packaging>atlassian-plugin</packaging>
 
     <name>Prometheus Exporter For Confluence</name>
